@@ -1,8 +1,10 @@
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from .models import CustomUser
+
+User = get_user_model
 
 # Create your views here.
 def register_view(request):
@@ -18,7 +20,7 @@ def register_view(request):
             })
 
         try:
-            user = User.objects.create_user(username,email,password)
+            user = CustomUser.objects.create_user(username = username,email= email,password=password)
             user.save()
         except:
             return render(request, "users/register.html", {
