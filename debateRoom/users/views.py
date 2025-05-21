@@ -4,7 +4,6 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .models import CustomUser
 
-User = get_user_model
 
 # Create your views here.
 def register_view(request):
@@ -33,7 +32,9 @@ def register_view(request):
 def index(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect(reverse("login"))
-    return render(request, "users/user.html")
+    return render(request, "users/user.html",{
+         "name": request.user.username
+    })
 
 def login_view(request):
     if request.method == "POST":
@@ -47,7 +48,7 @@ def login_view(request):
             return render(request,"users/login.html", {
                 "message" : "Invalid Credentials"
             })
-    return render(request,"users/login.html")
+    return render(request,"users/login.html",)
 
 def logout_view(request):
     logout(request)

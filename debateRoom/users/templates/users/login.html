@@ -1,7 +1,6 @@
 {% extends "users/layout.html" %}
-
 {% block body %}
-    <H1>Login</H1>
+    <h1>Login</h1>
     {% if message %}
         <div>{{message}}</div>
     {% endif %}
@@ -10,6 +9,7 @@
         {% csrf_token %}
         <input type="text" name="username" placeholder="Username">
         <input type="password" name="password" placeholder="Password">
-        <input type="submit" value="Login">
+        <input type="submit" value="Login" class="button">
     </form>
+    <p>No Account? <a href="{% url 'register' %}">Register Here</a></p>
 {% endblock %}
