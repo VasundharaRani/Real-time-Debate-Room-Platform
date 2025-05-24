@@ -7,11 +7,11 @@
     {% endif %}
     <form action="{% url 'register' %}" method="post">
         {% csrf_token %}
-        <input type="text" name="username" placeholder="Username">
-        <input type="emial" name="email" placeholder="Email">
-        <input type="password" name="password" placeholder="Password">
-        <input type="confirm" name="confirm" placeholder="Confirm">
-        <input type="submit" class="button">
+        <input type="text" name="username" placeholder="Username" required minlength="4">
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required minlength="7">
+        <input type="password" name="confirm" placeholder="Confirm" required>
+        <input type="submit" value="Register" class="button">
     </form>
     <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
     

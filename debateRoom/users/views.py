@@ -1,12 +1,16 @@
 from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .models import CustomUser
+from django.views.decorators.cache import never_cache,cache_control
 
 
 # Create your views here.
+@never_cache
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect("index")
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
@@ -29,6 +33,7 @@ def register_view(request):
         return HttpResponseRedirect(reverse("index"))
     return render(request,"users/register.html")
 
+@never_cache
 def index(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect(reverse("login"))
@@ -36,7 +41,10 @@ def index(request):
          "name": request.user.username
     })
 
+@never_cache
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("index") # already logged in
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
