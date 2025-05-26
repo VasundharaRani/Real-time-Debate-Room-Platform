@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 User = settings.AUTH_USER_MODEL
 # Create your models here.
@@ -46,8 +47,8 @@ class RoomParticipant(models.Model):
 class DebateRound(models.Model):
     room = models.ForeignKey(DebateRoom,on_delete=models.CASCADE, related_name="rounds")
     round_number = models.PositiveIntegerField()
-    start_time = models.DateTimeField
-    end_time = models.DateTimeField
+    start_time = models.DateTimeField(default = timezone.now)
+    end_time = models.DateTimeField(default = timezone.now)
     current_speaker = models.ForeignKey(User,on_delete=models.SET_NULL, null = True,blank = True)
     is_active = models.BooleanField(default=True)
 
