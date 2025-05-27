@@ -1,0 +1,9 @@
+{% extends "debates/layout.html" %}
+{% block body %}
+<h2>Create Debate Room</h2>
+<form action="{% url 'create_debate_room' %}" method = "post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Debate Room</button>
+</form>
+{% endblock %}
