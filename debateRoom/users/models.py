@@ -11,7 +11,7 @@ class CustomUser(AbstractUser):
     ]
 
     # user = models.OnetoOneField(user, on_delete=CASCADE)
-    role = models.CharField(max_length=64, choices = ROLE_CHOICES, default="audience")
+    role = models.CharField(max_length=64, choices = ROLE_CHOICES)
 
     def __str__(self):
-        return f"{self.username} - {self.role}"
+        return f"{self.username}"

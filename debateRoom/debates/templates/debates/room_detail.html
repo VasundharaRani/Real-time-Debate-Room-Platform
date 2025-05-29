@@ -1,0 +1,21 @@
+{% extends "debates/layout.html" %}
+{% block body %}
+    <h2>{{room.title}}</h2>
+    <p>{{room.description}}</p>
+
+    <h3>Participants</h3>
+    <ul>
+        {% for participant in participants %}
+        <li>{{participant.user.username}} - {{participant.role}}</li>
+        {% endfor %}
+    </ul>
+
+    {% if is_moderator_or_host %}
+    <form action="" method="post">
+        {% csrf_token %}
+        <button type="submit">
+            {% if room.allow_entry %} Lock Room {% else %} Reopen Room {% endif %}
+        </button>
+    </form>
+    {% endif %}
+{% endblock %}

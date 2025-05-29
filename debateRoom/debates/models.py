@@ -21,7 +21,7 @@ class DebateRoom(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "f{self.title} ({self.topic})"
+        return f"{self.title} ({self.topic})"
 
 class RoomParticipant(models.Model):
     ROLE_CHOICES = [
