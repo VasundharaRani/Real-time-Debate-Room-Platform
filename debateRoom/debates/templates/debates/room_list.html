@@ -1,0 +1,34 @@
+{% extends "debates/layout.html" %}
+{% block body %}
+<h2>Debate Rooms</h2>
+
+<section>
+    <h3>Live</h3>
+    <ul>
+        {% for room in live_room %}
+        <li>
+            <strong>{{room.title}}</strong> - {{room.format}} <br>
+            {{room.description}} <br>
+            <a href="{% url 'debate_room_detail' room.id %}">Join Live</a>
+        </li>
+        {% empty %}
+        <li>No Live Debates</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section>
+    <h3>Upcoming Debates</h3>
+    <ul>
+        {% for room in upcoming_rooms %}
+        <li>
+            <strong>{{room.title}}</strong> - {{room.format}} <br>
+            {{room.description}} <br>
+            <a href="{% url 'debate_room_detail' room.id %}">View</a>
+        </li>
+        {% empty %}
+        <li>No Upcoming debates</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

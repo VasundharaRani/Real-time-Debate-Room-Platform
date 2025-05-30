@@ -2,13 +2,30 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseForbidden
+from django.utils import timezone
+from django.db.models import Min
 from .models import DebateRoom, RoomParticipant
 from .forms import DebateRoomForm
 
 User = get_user_model()
 
 # Create your views here.
-# @login_required
+@login_required
+def dashboard(request):
+    # get all rooms where this user is a participant
+    my_participations = RoomParticipant.objects.select_related('room').filter(user=request.user)
+    
+    upcoming_rooms = my_participations.filter(room__is_live = True)
+    past_rooms = my_participations.filter(room__is_live = False)
+
+    featured_rooms = DebateRoom.objects.filter(is_featured = True)
+    return render(request, 'debates/dashboard.html',{
+        'upcoming_rooms': upcoming_rooms,
+        'past_rooms' : past_rooms,
+        'featured_rooms' : featured_rooms,
+    })
+
+@login_required
 def create_debate_room(request):
     if request.method == 'POST':
         form = DebateRoomForm(request.POST)
@@ -23,6 +40,7 @@ def create_debate_room(request):
         form = DebateRoomForm()
     return render(request, 'debates/create_room.html',{'form':form})
 
+@login_required
 def assign_roles(request,room_id):
     room = get_object_or_404(DebateRoom, id=room_id)
     # only moderator can assign roles
@@ -52,6 +70,7 @@ def assign_roles(request,room_id):
         'all_users': all_users,
     })
 
+@login_required
 def debate_room_detail(request, room_id):
     room = get_object_or_404(DebateRoom, id=room_id)
 
@@ -76,6 +95,7 @@ def debate_room_detail(request, room_id):
         'is_moderator_or_host' : is_moderator_or_host
     })
 
+@login_required
 def toggle_room_entry(request,room_id):
     room = get_object_or_404(DebateRoom,id=room_id)
 
@@ -85,3 +105,17 @@ def toggle_room_entry(request,room_id):
     room.allow_entry = not room.allow_entry
     room.save()
     return redirect('debate_room_detail',room_id=room.id)
+
+@login_required
+def debate_room_list(request):
+    now = timezone.now()
+    rooms_with_time = DebateRoom.objects.filter(is_private = False).annotate(
+        first_start = Min('rounds__start_time')
+    )
+    live_rooms = rooms_with_time.filter(is_live=True).order_by('-first_start')
+    upcoming_rooms = rooms_with_time.filter(is_live = False, first_start__gt=now).order_by('first_start')
+
+    return render(request,'debates/room_list.html',{
+        'live_rooms' : live_rooms,
+        'upcoming_rooms' : upcoming_rooms
+    })

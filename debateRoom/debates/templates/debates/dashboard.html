@@ -1,0 +1,50 @@
+{% extends "debates/layout.html" %}
+{% block body %}
+
+    <div class="navbar">
+        <div>
+            <a href="{% url 'create_debate_room' %}">Create Debate Room</a>
+            <a href="{% url 'debate_room_list' %}">Debate Rooms</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Welcome {{user.username}}</h2>
+        <div class="section">
+            <h3>Upcoming Debates</h3>
+            <ul>
+                {% for participant in upcoming_rooms %}
+                <li>{{ participant.room.title}} - Role : {{participant.role}}
+                    <a href="{% url 'debate_room_detail' participant.room.id %}">Join</a>
+                </li>
+                {% empty %}
+                <li>No Upcoming debates</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>Past Debates</h3>
+            <ul>
+                {% for participant in past_rooms %}
+                <li>{{participant.room.title}} - Role : {{participant.role}}</li>
+                {% empty %}
+                <li>No Past debates</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>Featured Debates</h3>
+            <ul>
+                {% for room in featured_rooms %}
+                <li>{{ room.title }} - {{ room.description }}</li>
+                {% empty %}
+                <li>No featured debates currently.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+{% endblock %}

@@ -4,9 +4,10 @@ from .models import DebateRoom, RoomParticipant, DebateRound
 # Register your models here.
 @admin.register(DebateRoom)
 class DebateRoomAdmin(admin.ModelAdmin):
-    list_display = ('title','topic','created_by','is_live','is_private','format','created_at')
+    list_display = ('title','topic','created_by','is_live','is_private','is_featured','format','created_at')
     list_filter = ('is_live','is_private','format')
     search_fields = ('title','topic','created_by__username')
+    list_editable = ('is_featured',)
 
 @admin.register(RoomParticipant)
 class RoomParticipantAdmin(admin.ModelAdmin):

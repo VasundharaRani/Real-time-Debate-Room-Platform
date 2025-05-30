@@ -19,6 +19,7 @@ class DebateRoom(models.Model):
     allow_entry = models.BooleanField(default=True)
     is_live = models.BooleanField(default = False)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_featured = models.BooleanField(default = False)
 
     def __str__(self):
         return f"{self.title} ({self.topic})"
