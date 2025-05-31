@@ -6,6 +6,15 @@
     <title>Debates</title>
 </head>
 <body>
+    <div class="navbar">
+        <div>
+            <a href="{% url 'create_debate_room' %}">Create Debate Room</a>
+            <a href="{% url 'debate_room_list' %}">Debate Rooms</a>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+
     {% block body %}
     {% endblock %}
 </body>

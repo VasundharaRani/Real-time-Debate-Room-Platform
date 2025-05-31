@@ -1,14 +1,6 @@
 {% extends "debates/layout.html" %}
 {% block body %}
 
-    <div class="navbar">
-        <div>
-            <a href="{% url 'create_debate_room' %}">Create Debate Room</a>
-            <a href="{% url 'debate_room_list' %}">Debate Rooms</a>
-            <a href="{% url 'logout' %}">Logout</a>
-        </div>
-    </div>
-
     <div class="container">
         <h2>Welcome {{user.username}}</h2>
         <div class="section">
