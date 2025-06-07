@@ -3,3 +3,12 @@ body{
    background-size: cover;
    background-repeat: no-repeat;
 }
+
+.navbar {
+   display: flex;
+   align-items: flex-end;
+}
+
+/* ul.errorlist {
+   color: #BA0F30;
+} */

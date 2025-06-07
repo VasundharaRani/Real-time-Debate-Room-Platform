@@ -27,6 +27,9 @@ def dashboard(request):
 
 @login_required
 def create_debate_room(request):
+    # only moderators can create debate room
+    if request.user.role != 'moderator':
+        return HttpResponseForbidden("Only moderators can create debate rooms.")
     if request.method == 'POST':
         form = DebateRoomForm(request.POST)
         if form.is_valid():

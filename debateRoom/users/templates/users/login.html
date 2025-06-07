@@ -1,15 +1,26 @@
 {% extends "users/layout.html" %}
-{% block body %}
-    <h1>Login</h1>
-    {% if message %}
-        <div>{{message}}</div>
-    {% endif %}
+{% block body%}
+  <h1>Login</h1>
+  {% if form.errors %}
+    <ul class="errorlist">
+      {% for field in form %}
+        {% for error in field.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
-    <form action = "{% url 'login' %}" method="post">
-        {% csrf_token %}
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <input type="submit" value="Login" class="button">
-    </form>
-    <p>No Account? <a href="{% url 'register' %}">Register Here</a></p>
+  <form method="post">
+    {% csrf_token %}
+    <!-- {{ form.as_p }} -->
+    {% for field in form %}
+        {{field}}
+    {% endfor %}
+    <button type="submit" class="button">Login</button>
+  </form>
+  <p>No account? <a href="{%url 'register'%}">Register Here</a></p>
 {% endblock %}

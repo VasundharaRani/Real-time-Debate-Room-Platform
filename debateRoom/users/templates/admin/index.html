@@ -1,0 +1,15 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+  <div class="module">
+    <h2>Pending User Approvals</h2>
+    {% if pending_users_count > 0 %}
+      <p>There are <strong style="color:#BA0F30">{{ pending_users_count }}</strong> users waiting for approval.</p>
+      <p><a href="{% url 'admin:users_customuser_changelist' %}?is_approved__exact=0">View Pending Users</a></p>
+    {% else %}
+      <p>No pending users.</p>
+    {% endif %}
+  </div>
+
+  {{ block.super }}
+{% endblock %}
