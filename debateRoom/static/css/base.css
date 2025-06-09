@@ -1,5 +1,4 @@
 h1 {
-    /* color:#145DA0; */
     color: #A45C40;
 }
 body {
@@ -8,6 +7,9 @@ body {
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
+    background-image: url("bg.jpg"); 
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 form {
     display: flex;
@@ -43,4 +45,7 @@ p {
 }
 a {
     color: #B97D60;
+}
+.navbar a{
+    text-decoration: none;
 }

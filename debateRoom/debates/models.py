@@ -18,6 +18,7 @@ class DebateRoom(models.Model):
     timer_per_round = models.IntegerField(default = 120)
     allow_entry = models.BooleanField(default=True)
     is_live = models.BooleanField(default = False)
+    start_time = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_featured = models.BooleanField(default = False)
 
@@ -45,16 +46,16 @@ class RoomParticipant(models.Model):
         return f"{self.user.username} - {self.role} in {self.room.title}"
 
     
-class DebateRound(models.Model):
-    room = models.ForeignKey(DebateRoom,on_delete=models.CASCADE, related_name="rounds")
-    round_number = models.PositiveIntegerField()
-    start_time = models.DateTimeField(default = timezone.now)
-    end_time = models.DateTimeField(default = timezone.now)
-    current_speaker = models.ForeignKey(User,on_delete=models.SET_NULL, null = True,blank = True)
-    is_active = models.BooleanField(default=True)
+# class DebateRound(models.Model):
+#     room = models.ForeignKey(DebateRoom,on_delete=models.CASCADE, related_name="rounds")
+#     round_number = models.PositiveIntegerField()
+#     start_time = models.DateTimeField(default = timezone.now)
+#     end_time = models.DateTimeField(default = timezone.now)
+#     current_speaker = models.ForeignKey(User,on_delete=models.SET_NULL, null = True,blank = True)
+#     is_active = models.BooleanField(default=True)
 
-    class Meta:
-        ordering = ['round_number']
+#     class Meta:
+#         ordering = ['round_number']
 
-    def __str__self(self):
-        return f"Round {self.round_number} in {self.room_title}"
+#     def __str__self(self):
+#         return f"Round {self.round_number} in {self.room_title}"

@@ -1,4 +1,5 @@
 {% extends "debates/layout.html" %}
+{% load static %}
 {% block body %}
     <h2>{{room.title}}</h2>
     <p>{{room.description}}</p>
@@ -10,6 +11,16 @@
         {% endfor %}
     </ul>
 
+    {% if is_moderator_or_host and not room.is_live %}
+    <form method="post" action="{% url 'start_debate' room.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Start Debate</button>
+    </form>
+    {% endif %}
+    {% if room.is_live %}
+        <p style="color: green;"><strong>The debate is now live!</strong></p>
+    {% endif %}  
+
     {% if is_moderator_or_host %}
     <form action="" method="post">
         {% csrf_token %}
@@ -18,5 +29,20 @@
         </button>
     </form>
     {% endif %}
-    <a href=""
+
+    {% if room.is_live %}
+        <div id="countdown_timer">Time left: <span id="time">60</span>sec</div>
+        <script>
+            let time = 60;
+            const timer = setInterval(() =>{
+                document.getElementById('time').innerText = --time;
+                if(time <=0 ) clearInterval(timer);
+            },1000);
+        </script>
+
+        <!-- webRTC setup -->
+        <script src="{% static 'js/webrtc.js' %}"></script>
+    {% else %}
+        <p><em>The debate hasnot started yet.</em></p>
+    {% endif %}
 {% endblock %}

@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.db.models import Min
 from .models import DebateRoom, RoomParticipant
 from .forms import DebateRoomForm
+from django.contrib import messages
 
 User = get_user_model()
 
@@ -27,7 +28,9 @@ def dashboard(request):
 
 @login_required
 def create_debate_room(request):
-    # only moderators can create debate room
+    # only moderators can create debate 
+    if not request.user.is_approved:
+        return HttpResponseForbidden("You are not approved by admin yet.")
     if request.user.role != 'moderator':
         return HttpResponseForbidden("Only moderators can create debate rooms.")
     if request.method == 'POST':
@@ -122,3 +125,21 @@ def debate_room_list(request):
         'live_rooms' : live_rooms,
         'upcoming_rooms' : upcoming_rooms
     })
+
+@login_required
+def start_debate(request,room_id):
+    room = get_object_or_404(DebateRoom, id = room_id)
+
+    # only moderator or creator can start the debate
+    if request.user != room.created_by and not RoomParticipant.objects.filter(room=room, user=request.user,role="moderator").exists():
+        return HttpResponseForbidden("Only the moderator or creator can start the debate")
+
+    if room.is_live:
+        messages.info(request,"Debate is already live")
+    else:
+        room.is_live = True
+        room.start_time = timezone.now()
+        room.save()
+        messages.success(request,"Debate started successfully.")
+
+    return redirect("debate_room_detail",room_id=room.id)
