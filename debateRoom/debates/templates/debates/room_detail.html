@@ -22,7 +22,7 @@
     {% endif %}  
 
     {% if is_moderator_or_host %}
-    <form action="" method="post">
+    <form action="{% url 'toggle_room_entry' room.id %}" method="post">
         {% csrf_token %}
         <button type="submit">
             {% if room.allow_entry %} Lock Room {% else %} Reopen Room {% endif %}
@@ -39,10 +39,13 @@
                 if(time <=0 ) clearInterval(timer);
             },1000);
         </script>
-
+        <script>
+            const ROOM_ID_FROM_TEMPLATE = "{{ room.id }}";
+            const USER_ID_FROM_TEMPLATE = "{{ request.user.id }}";
+        </script>
         <!-- webRTC setup -->
-        <script src="{% static 'js/webrtc.js' %}"></script>
+        <script src="{% static 'debates/js/webrtc.js' %}"></script>
     {% else %}
-        <p><em>The debate hasnot started yet.</em></p>
+        <p><em>The debate has not started yet.</em></p>
     {% endif %}
 {% endblock %}

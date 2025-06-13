@@ -115,12 +115,10 @@ def toggle_room_entry(request,room_id):
 @login_required
 def debate_room_list(request):
     now = timezone.now()
-    rooms_with_time = DebateRoom.objects.filter(is_private = False).annotate(
-        first_start = Min('rounds__start_time')
-    )
-    live_rooms = rooms_with_time.filter(is_live=True).order_by('-first_start')
-    upcoming_rooms = rooms_with_time.filter(is_live = False, first_start__gt=now).order_by('first_start')
-
+    
+    live_rooms = DebateRoom.objects.filter(is_private=False,is_live=True).order_by('start_time')
+    upcoming_rooms = DebateRoom.objects.filter(is_private = False,is_live=False).order_by('start_time')
+    
     return render(request,'debates/room_list.html',{
         'live_rooms' : live_rooms,
         'upcoming_rooms' : upcoming_rooms

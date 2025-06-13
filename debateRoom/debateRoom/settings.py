@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'users',
     'chats',
     'debates',
@@ -138,3 +140,14 @@ LOGIN_URL = 'login'
 AUTHENTICATION_BACKENDS = [
     'users.backends.ApprovedUserBackend',
 ]
+
+ASGI_APPLICATION = 'debateRoom.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default' : {
+        'BACKEND' : 'channels_redis.core.RedisChannelLayer',
+        'CONFIG' : {
+            'hosts' : [('localhost',6379)],
+        },
+    },
+}
