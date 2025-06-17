@@ -18,11 +18,17 @@ const config = {
 
 async function startMedia() {
     localStream = await navigator.mediaDevices.getUserMedia({audio : true, video: false});
+    console.log("Local stream tracks:", localStream.getAudioTracks());
+    localStream.getAudioTracks().forEach(track => {
+        console.log("Track enabled:", track.enabled);
+    });
 }
 
 // websocket connection
 function connectWebSocket() {
-    socket = new WebSocket('ws://${window.location.host}/ws/debate/${roomId}/');
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    socket = new WebSocket(`${wsScheme}://${window.location.host}/ws/debate/${roomId}/`);
+    // socket = new WebSocket(`ws://${window.location.host}/ws/debate/${roomId}/`);
 
     socket.onopen = () => {
         console.log("WebSocket Connected");
@@ -38,6 +44,7 @@ function connectWebSocket() {
         }
 
         if (data.action === 'signal'){
+            console.log("Received signal:", data);
             handleSignal(data);
         }
 
@@ -59,10 +66,14 @@ async function createOffer(peerId) {
     const pc = new RTCPeerConnection(config);
     peers[peerId] = pc;
 
-    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    localStream.getTracks().forEach(track => {
+        pc.addTrack(track, localStream);
+        console.log("Added track to peer connection:", track);
+    });
 
     pc.onicecandidate = event => {
         if (event.candidate){
+            console.log("Sending ICE candidate to", peerId, event.candidate);
             socket.send(JSON.stringify({
                 action : 'signal',
                 target_id : peerId,
@@ -83,6 +94,10 @@ async function createOffer(peerId) {
             document.body.appendChild(audio);
         }
         audio.srcObject = event.streams[0];
+        audio.play().catch(e => console.warn("Autoplay blocked:", e));
+        console.log(`Remote audio track added from ${fromId}`, event.streams[0].getAudioTracks());
+
+
     };
 
     const offer = await pc.createOffer();
@@ -113,6 +128,7 @@ async function handleSignal(data) {
 
         pc.onicecandidate = event => {
             if (event.candidate){
+                console.log("Sending ICE candidate to", peerId, event.candidate);
                 socket.send(JSON.stringify({
                     action : 'signal',
                     target_id : fromId,
@@ -125,14 +141,17 @@ async function handleSignal(data) {
         };
     
         pc.ontrack = event => {
-            let audio = document.getElementById(`audio-${peerId}`);
+            let audio = document.getElementById(`audio-${fromId}`);
             if (!audio) {
                 audio = document.createElement('audio');
-                audio.id = `audio-${peerId}`;
+                audio.id = `audio-${fromId}`;
                 audio.autoplay = true;
                 document.body.appendChild(audio);
             }
             audio.srcObject = event.streams[0];
+            console.log("Remote track received", event.streams);
+            audio.play().catch(e => console.warn("Autoplay blocked:", e));
+
         };
     }
 
@@ -152,6 +171,7 @@ async function handleSignal(data) {
     } else if (signal.type === 'answer'){
         await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
     } else if (signal.type === 'candidate'){
+        console.log("Receiving ICE candidate from", fromId, signal.candidate);
         await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
     }
 }

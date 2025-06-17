@@ -3,14 +3,16 @@ import json
 
 class DebateConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        print("Connected user:", self.scope["user"]) 
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f"debate_{self.room_id}"
         self.user = self.scope['user']
+    
 
         # Add websocket connection to room's group
         await self.channel_layer.group_add(
             self.room_group_name,
-            self.channel_layer
+            self.channel_name
         )
 
         await self.accept()
@@ -18,7 +20,7 @@ class DebateConsumer(AsyncWebsocketConsumer):
         # notify the group that user has joined
         await self.channel_layer.group_send(
             self.room_group_name,{
-                'type' : 'user.joined',
+                'type' : 'user_joined',
                 'user_id' : self.user.id,
                 'username' : self.user.username
             }
@@ -28,7 +30,7 @@ class DebateConsumer(AsyncWebsocketConsumer):
         # notify the group that user has left
         await self.channel_layer.group_send(
             self.room_group_name,{
-                'type' : 'user.left',
+                'type' : 'user_left',
                 'user_id' : self.user.id
             }
         )
@@ -61,6 +63,7 @@ class DebateConsumer(AsyncWebsocketConsumer):
             )
 
     async def signal_message(self,event):
+        print(f"Signal to {self.user.id} from {event['user_id']} of type {event['signal_data'].get('type')}")
         if str(self.user.id) == str(event['target_id']):
             await self.send(text_data = json.dumps({
                 'action' : 'signal',

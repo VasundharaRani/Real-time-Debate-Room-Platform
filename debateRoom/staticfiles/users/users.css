@@ -1,0 +1,15 @@
+body{
+   background-image: url("bg.jpg"); 
+   background-size: cover;
+   background-repeat: no-repeat;
+}
+
+.navbar {
+   display: flex;
+   align-items: flex-end;
+}
+
+h1 {
+   /* color:#145DA0; */
+   color: #A45C40;
+}

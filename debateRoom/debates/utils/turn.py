@@ -14,6 +14,6 @@ def generate_turn_credentials(expiry=3600):
     return {
         "username": username,
         "credential": credential,
-        "urls": ["turn:turn.debateplatform.com:3478"],  # Replace with your actual TURN server
+        "urls": ["turn:turn.debateplatform.com:3478"], 
         "realm": TURN_REALM
     }
