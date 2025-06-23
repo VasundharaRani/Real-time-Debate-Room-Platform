@@ -1,8 +1,9 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+ 
 
-User = settings.AUTH_USER_MODEL
 # Create your models here.
 class DebateRoom(models.Model):
     Format_Choice = [
@@ -12,26 +13,34 @@ class DebateRoom(models.Model):
     title = models.CharField(max_length = 255)
     description = models.TextField(blank = True)
     topic = models.CharField(max_length=255)
-    created_by = models.ForeignKey(User,on_delete = models.CASCADE, related_name = "participants")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete = models.CASCADE, related_name = "participants")
     is_private = models.BooleanField(default = True)
-    format = models.CharField(max_length=10, choices = Format_Choice,default = "1v1")
-    timer_per_round = models.IntegerField(default = 120)
+    debate_format = models.CharField(max_length=10, choices = Format_Choice,default = "1v1")
+    timer_per_round = models.IntegerField(default = 180)
     allow_entry = models.BooleanField(default=True)
     is_live = models.BooleanField(default = False)
     start_time = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_featured = models.BooleanField(default = False)
+    winner_declared = models.BooleanField(default=False)
+    winner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='won_debates')
 
+    def is_debate_over(self):
+        if not self.is_live or not self.start_time:
+            return False
+        elapsed = (timezone.now() - self.start_time).total_seconds()
+        return elapsed >= self.timer_per_round
+        
     def __str__(self):
         return f"{self.title} ({self.topic})"
 
 class RoomParticipant(models.Model):
     ROLE_CHOICES = [
         ("moderator","Moderator"),
-        ("debator","Debator"),
+        ("debater","Debater"),
         ("audience","Audience")
     ]
-    user = models.ForeignKey(User, on_delete= models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete= models.CASCADE)
     room = models.ForeignKey(DebateRoom, on_delete=models.CASCADE, related_name="participants")
     role = models.CharField(max_length=10,choices = ROLE_CHOICES)
     joined_at = models.DateTimeField(auto_now_add=True)
@@ -45,17 +54,11 @@ class RoomParticipant(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.role} in {self.room.title}"
 
+class Vote(models.Model) :
+    room = models.ForeignKey(DebateRoom,on_delete=models.CASCADE,related_name='voters')
+    voter = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    voted_for = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='received_votes')
+
+    class Meta:
+        unique_together = ('room','voter')
     
-# class DebateRound(models.Model):
-#     room = models.ForeignKey(DebateRoom,on_delete=models.CASCADE, related_name="rounds")
-#     round_number = models.PositiveIntegerField()
-#     start_time = models.DateTimeField(default = timezone.now)
-#     end_time = models.DateTimeField(default = timezone.now)
-#     current_speaker = models.ForeignKey(User,on_delete=models.SET_NULL, null = True,blank = True)
-#     is_active = models.BooleanField(default=True)
-
-#     class Meta:
-#         ordering = ['round_number']
-
-#     def __str__self(self):
-#         return f"Round {self.round_number} in {self.room_title}"

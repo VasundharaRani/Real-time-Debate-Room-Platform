@@ -14,12 +14,21 @@
         <label for="role">Role: </label>
         <select name="role">
             <option value="audience">Audience</option>
-            <option value="debator">Debator</option>
+            <option value="debater"{% if debater_limit_reached %}disabled{% endif %}>Debator</option>
             <option value="moderator">Moderator</option>
         </select>
+        {% if debater_limit_reached %}
+        <p style="color: red;">Only 2 debaters are allowed in 1v1 debates.</p>
+        {% endif %}
 
         <button type="submit">Assign Role</button>
     </form>
+
+    {% if messages %}
+        {% for message in messages %}
+            {{message}}
+        {% endfor %}
+    {% endif %}
 
     <h3>Current Participants</h3>
     <ul>

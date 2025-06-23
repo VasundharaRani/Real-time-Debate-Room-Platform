@@ -1,6 +1,7 @@
 {% extends "debates/layout.html" %}
 {% load static %}
 {% block body %}
+
     <h2>{{room.title}}</h2>
     <p>{{room.description}}</p>
 
@@ -11,41 +12,126 @@
         {% endfor %}
     </ul>
 
+    <!-- Voting Form for Audience -->
+    {% if my_role == 'audience' and room.is_live and not room.winner_declared %}
+        <h3>Vote for the Winner</h3>
+        <form id="vote-form">
+            {% csrf_token %}
+            {% for debater in debaters %}
+                <button type="submit" name="voted_for" value="{{ debater.id }}">
+                    {{ debater.username }}
+                </button>
+            {% endfor %}
+        </form>
+    {% endif %}
+
+
     {% if is_moderator_or_host and not room.is_live %}
-    <form method="post" action="{% url 'start_debate' room.id %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Start Debate</button>
-    </form>
+        <form method="post" action="{% url 'start_debate' room.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Start Debate</button>
+        </form>
     {% endif %}
     {% if room.is_live %}
         <p style="color: green;"><strong>The debate is now live!</strong></p>
     {% endif %}  
 
     {% if is_moderator_or_host %}
-    <form action="{% url 'toggle_room_entry' room.id %}" method="post">
-        {% csrf_token %}
-        <button type="submit">
-            {% if room.allow_entry %} Lock Room {% else %} Reopen Room {% endif %}
-        </button>
-    </form>
+        <form action="{% url 'toggle_room_entry' room.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit">
+                {% if room.allow_entry %} Lock Room {% else %} Reopen Room {% endif %}
+            </button>
+        </form>
     {% endif %}
 
+    <!-- Real-Time Vote Stats -->
     {% if room.is_live %}
-        <div id="countdown_timer">Time left: <span id="time">60</span>sec</div>
-        <script>
-            let time = 60;
-            const timer = setInterval(() =>{
-                document.getElementById('time').innerText = --time;
-                if(time <=0 ) clearInterval(timer);
-            },1000);
-        </script>
-        <script>
-            const ROOM_ID_FROM_TEMPLATE = "{{ room.id }}";
-            const USER_ID_FROM_TEMPLATE = "{{ request.user.id }}";
-        </script>
-        <!-- webRTC setup -->
-        <script src="{% static 'debates/js/webrtc.js' %}"></script>
+        <div id="vote-stats">
+            <h4>Live Voting Stats</h4>
+            <p>Loading...</p>
+        </div>
+    {% endif %}
+
+
+    {% if room.is_live %}
+    <div id="debate-timer">Time left: --:--</div>
+    {% if my_role == "debater" %}
+        <button id="mute-btn" onclick="toggleMute()">Mute</button>
+    {% endif %}
+    <script>
+        const startTime = new Date("{{ room.start_time|date:'c' }}");
+        const now = new Date();
+        const totalSeconds = parseInt("{{ room.timer_per_round|default:300 }}");
+        let remaining = totalSeconds - Math.floor((now - startTime) / 1000);
+        if (remaining < 0) remaining = 0;
+
+        function updateTimer() {
+            if (remaining > 0) {
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                document.getElementById("debate-timer").innerText = `Time left: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                remaining--;
+            } else {
+                document.getElementById("debate-timer").innerText = "Time's up!";
+            }
+        }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    </script>
+
+    <script>
+        const roomSlugOrId = "{{ room.id }}";
+    </script>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+    <script src="{% static 'debates/js/agora.js' %}"></script>
     {% else %}
         <p><em>The debate has not started yet.</em></p>
     {% endif %}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const voteForm = document.getElementById("vote-form");
+            const voteStatsContainer = document.getElementById("vote-stats");
+        
+            if (voteForm) {
+                voteForm.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    const votedFor = e.submitter.value;
+                    const response = await fetch("{% url 'submit_vote' room.id %}", {
+                        method: "POST",
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `voted_for=${votedFor}`
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert("✅ Vote submitted!");
+                    } else {
+                        alert("❌ " + (data.error || "Vote failed"));
+                    }
+                });
+            }
+        
+            async function fetchVoteStats() {
+                try {
+                    const res = await fetch("{% url 'vote_stats' room.id %}");
+                    const data = await res.json();
+                    voteStatsContainer.innerHTML = "<h4>Live Voting Stats</h4>";
+                    data.votes.forEach(vote => {
+                        voteStatsContainer.innerHTML += `
+                            <p><strong>${vote.name}</strong>: ${vote.percentage}% (${vote.count} votes)</p>
+                        `;
+                    });
+                } catch (err) {
+                    console.error("Vote stats fetch error:", err);
+                }
+            }
+        
+            setInterval(fetchVoteStats, 3000); // Poll every 3s
+        });
+    </script>        
 {% endblock %}

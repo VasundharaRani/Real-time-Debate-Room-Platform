@@ -1,13 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
+from django.db.models import F, ExpressionWrapper, DateTimeField, DurationField, Count
+from django.utils import timezone
+from django.db import models
 from django.db.models import Min
-from .models import DebateRoom, RoomParticipant
+from .models import DebateRoom, RoomParticipant,Vote
 from .forms import DebateRoomForm
 from django.contrib import messages
-
+import datetime
 User = get_user_model()
 
 # Create your views here.
@@ -16,11 +19,19 @@ def dashboard(request):
     # get all rooms where this user is a participant
     my_participations = RoomParticipant.objects.select_related('room').filter(user=request.user)
     
-    upcoming_rooms = my_participations.filter(room__is_live = True)
-    past_rooms = my_participations.filter(room__is_live = False)
+    live_rooms = my_participations.filter(room__is_live = True).filter(
+        room__start_time__isnull=False  # Not started yet
+    )
+    upcoming_rooms = my_participations.filter(room__is_live = False).filter(
+        room__start_time__isnull=True  # Not started yet
+    )
+    past_rooms = my_participations.filter(room__is_live = False).exclude(
+        room__start_time__isnull=True  # to make sure it's a finished debate
+    )
 
     featured_rooms = DebateRoom.objects.filter(is_featured = True)
     return render(request, 'debates/dashboard.html',{
+        'live_rooms' : live_rooms,
         'upcoming_rooms': upcoming_rooms,
         'past_rooms' : past_rooms,
         'featured_rooms' : featured_rooms,
@@ -47,11 +58,13 @@ def create_debate_room(request):
     return render(request, 'debates/create_room.html',{'form':form})
 
 @login_required
-def assign_roles(request,room_id):
+def assign_roles(request, room_id):
     room = get_object_or_404(DebateRoom, id=room_id)
-    # only moderator can assign roles
-    if not RoomParticipant.objects.filter(room=room,user=request.user, role='moderator'):
+
+    # Only moderators can assign roles
+    if not RoomParticipant.objects.filter(room=room, user=request.user, role='moderator').exists():
         return HttpResponseForbidden("Only moderators can assign roles")
+    
     if not room.allow_entry:
         return HttpResponseForbidden("Cannot assign roles after the debate has started")
 
@@ -59,22 +72,30 @@ def assign_roles(request,room_id):
         user_id = request.POST.get('user_id')
         role = request.POST.get('role')
         user = get_object_or_404(User, id=user_id)
-        # To avoid duplicate entries
-        participant, created = RoomParticipant.objects.get_or_create(user=user,room=room)
+
+        if room.debate_format == "1v1":
+            debater_count = RoomParticipant.objects.filter(room=room, role='debater').count()
+
+            if debater_count >= 2 and role == "debater":
+                messages.error(request, "Cannot assign more than 2 debaters for a 1v1 format.")
+                return redirect('assign_roles', room_id=room.id)
+
+        # Safe to assign
+        participant, created = RoomParticipant.objects.get_or_create(user=user, room=room)
         participant.role = role
         participant.save()
+        messages.success(request, f"{user.username} assigned as {role}.")
+        return redirect('assign_roles', room_id=room.id)
 
-        return redirect('assign_roles',room_id=room.id)
-
-    participants = RoomParticipant.objects.filter(room = room).select_related('user')
-    # to get users not in the room
-    all_users = User.objects.exclude(id__in = participants.values_list('user_id',flat=True))
+    participants = RoomParticipant.objects.filter(room=room).select_related('user')
+    all_users = User.objects.exclude(id__in=participants.values_list('user_id', flat=True))
 
     return render(request, 'debates/assign_roles.html', {
         'room': room,
         'participants': participants,
         'all_users': all_users,
     })
+
 
 @login_required
 def debate_room_detail(request, room_id):
@@ -88,17 +109,29 @@ def debate_room_detail(request, room_id):
 
     # Auto-assign audience role if not already a participant
     if not participants.filter(user=request.user).exists():
-        RoomParticipant.objects.create(user=request.user,room=room,role='audience')
+        if not room.is_private and request.user.is_approved:
+            RoomParticipant.objects.create(user=request.user,room=room,role='audience')
 
     is_moderator_or_host = (
         request.user == room.created_by or
         RoomParticipant.objects.filter(user=request.user, room=room,role='moderator').exists()
     )
 
+    debater_ids = participants.filter(role='debater').values_list('user__id', flat=True)
+    debaters = User.objects.filter(id__in=debater_ids)
+    my_role = participants.filter(user=request.user).first().role
+
+    if room.is_live and room.is_debate_over():
+        room.is_live = False
+        room.save()
+
     return render(request, 'debates/room_detail.html',{
         'room' : room,
         'participants' : participants,
-        'is_moderator_or_host' : is_moderator_or_host
+        'is_moderator_or_host' : is_moderator_or_host,
+        'debater_ids' : debater_ids,
+        'debaters' : debaters,
+        'my_role' : my_role
     })
 
 @login_required
@@ -116,8 +149,25 @@ def toggle_room_entry(request,room_id):
 def debate_room_list(request):
     now = timezone.now()
     
-    live_rooms = DebateRoom.objects.filter(is_private=False,is_live=True).order_by('start_time')
-    upcoming_rooms = DebateRoom.objects.filter(is_private = False,is_live=False).order_by('start_time')
+   
+    # Only show live debates that are not over yet
+    live_rooms = DebateRoom.objects.annotate(
+        end_time=ExpressionWrapper(
+            F('start_time') + ExpressionWrapper(F('timer_per_round') * 1.0, output_field=DurationField()),
+            output_field=DateTimeField()
+        )
+    ).filter(
+        is_private=False,
+        is_live=True,
+        start_time__isnull=False,
+        end_time__gt=now
+    ).order_by('start_time')
+
+    # Upcoming ones (not live yet)
+    upcoming_rooms = DebateRoom.objects.filter(
+        is_private=False,
+        is_live=False
+    ).order_by('start_time')
     
     return render(request,'debates/room_list.html',{
         'live_rooms' : live_rooms,
@@ -140,4 +190,67 @@ def start_debate(request,room_id):
         room.save()
         messages.success(request,"Debate started successfully.")
 
-    return redirect("debate_room_detail",room_id=room.id)
+    return render(request, 'debates/room_detail.html', {
+    'room': room
+})
+
+@login_required
+def submit_vote(request,room_id):
+    room = get_object_or_404(DebateRoom,id=room_id)
+
+    if not room.is_live or room.winner_declared:
+        return JsonResponse({'error': 'Voting not allowed'}, status=403)
+
+    # Only audience can vote
+    try:
+        participant = RoomParticipant.objects.get(room=room, user=request.user)
+        if participant.role != 'audience':
+            return JsonResponse({'error': 'Only audience can vote'}, status=403)
+    except RoomParticipant.DoesNotExist:
+        return JsonResponse({'error': 'User not in room'}, status=403)
+
+    voted_for_id = request.POST.get('voted_for')
+    voted_for = get_object_or_404(User, id=voted_for_id)
+
+    # Save or update vote
+    vote, created = Vote.objects.update_or_create(
+        room=room,
+        voter=request.user,
+        defaults={'voted_for': voted_for}
+    )
+
+    return JsonResponse({'success': True})
+
+@login_required
+def vote_stats(request,room_id):
+    room = get_object_or_404(DebateRoom,id =room_id)
+    total_votes = Vote.objects.filter(room=room).count()
+
+    vote_counts = Vote.objects.filter(room=room).values('voted_for__username').annotate(count=Count('id'))
+    results = []
+    for vote in vote_counts:
+        percentage = round((vote['count'] / total_votes) * 100) if total_votes else 0
+        results.append({
+            'name': vote['voted_for__username'],
+            'count': vote['count'],
+            'percentage': percentage
+        })
+
+    return JsonResponse({'votes': results})
+
+@login_required
+def declare_winner(request, room_id):
+    room = get_object_or_404(DebateRoom, id=room_id)
+
+    if not RoomParticipant.objects.filter(room=room, user=request.user, role='moderator').exists():
+        return HttpResponseForbidden("Only moderators can declare winner")
+
+    # Get top-voted debater
+    top_vote = Vote.objects.filter(room=room).values('voted_for').annotate(count=Count('id')).order_by('-count').first()
+    if top_vote:
+        winner_user = get_object_or_404(User, id=top_vote['voted_for'])
+        room.winner = winner_user
+        room.winner_declared = True
+        room.save()
+
+    return redirect('debate_room_detail', room_id=room.id)

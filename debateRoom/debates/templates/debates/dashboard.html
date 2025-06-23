@@ -4,6 +4,19 @@
     <div class="container">
         <h2>Welcome {{user.username}}</h2>
         <div class="section">
+            <h3>Live Debates</h3>
+            <ul>
+                {% for participant in live_rooms %}
+                <li>{{ participant.room.title}} - Role : {{participant.role}}
+                    <a href="{% url 'debate_room_detail' participant.room.id %}">Join</a>
+                </li>
+                {% empty %}
+                <li>No Live debates</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="section">
             <h3>Upcoming Debates</h3>
             <ul>
                 {% for participant in upcoming_rooms %}

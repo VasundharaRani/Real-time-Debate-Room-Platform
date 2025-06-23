@@ -58,6 +58,10 @@ function connectWebSocket() {
                 alert("You were muted by the moderator.");
             }
         }
+
+        if (data.action === 'vote_update') {
+            updateVoteChart(data.results);
+        }
     };
 }
 
@@ -189,3 +193,21 @@ function closeConnection(peerId){
     await startMedia();
     connectWebSocket();
 })();
+
+function castVote(userId) {
+    socket.send(JSON.stringify({
+        action: "vote",
+        voted_for: userId
+    }));
+}
+
+function updateVoteChart(results) {
+    for (const userId in results) {
+        const percentage = results[userId];
+        const bar = document.getElementById(`vote-bar-${userId}`);
+        if (bar) {
+            bar.style.width = `${percentage}%`;
+            bar.textContent = `${percentage}%`;
+        }
+    }
+}

@@ -4,8 +4,8 @@ from users.admin import custom_admin_site
 # Register your models here.
 @admin.register(DebateRoom, site=custom_admin_site)
 class DebateRoomAdmin(admin.ModelAdmin):
-    list_display = ('title','topic','created_by','is_live','is_private','is_featured','format','created_at')
-    list_filter = ('is_live','is_private','format')
+    list_display = ('title','topic','created_by','is_live','is_private','is_featured','debate_format','created_at')
+    list_filter = ('is_live','is_private','debate_format')
     search_fields = ('title','topic','created_by__username')
     list_editable = ('is_featured',)
 
