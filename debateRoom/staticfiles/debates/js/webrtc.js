@@ -19,6 +19,9 @@ const config = {
 async function startMedia() {
     localStream = await navigator.mediaDevices.getUserMedia({audio : true, video: false});
     console.log("Local stream tracks:", localStream.getAudioTracks());
+    localStream.getAudioTracks().forEach(track => {
+        console.log("Track enabled:", track.enabled);
+    });
 }
 
 // websocket connection
@@ -41,6 +44,7 @@ function connectWebSocket() {
         }
 
         if (data.action === 'signal'){
+            console.log("Received signal:", data);
             handleSignal(data);
         }
 
@@ -54,6 +58,10 @@ function connectWebSocket() {
                 alert("You were muted by the moderator.");
             }
         }
+
+        if (data.action === 'vote_update') {
+            updateVoteChart(data.results);
+        }
     };
 }
 
@@ -62,10 +70,14 @@ async function createOffer(peerId) {
     const pc = new RTCPeerConnection(config);
     peers[peerId] = pc;
 
-    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+    localStream.getTracks().forEach(track => {
+        pc.addTrack(track, localStream);
+        console.log("Added track to peer connection:", track);
+    });
 
     pc.onicecandidate = event => {
         if (event.candidate){
+            console.log("Sending ICE candidate to", peerId, event.candidate);
             socket.send(JSON.stringify({
                 action : 'signal',
                 target_id : peerId,
@@ -87,6 +99,8 @@ async function createOffer(peerId) {
         }
         audio.srcObject = event.streams[0];
         audio.play().catch(e => console.warn("Autoplay blocked:", e));
+        console.log(`Remote audio track added from ${fromId}`, event.streams[0].getAudioTracks());
+
 
     };
 
@@ -118,6 +132,7 @@ async function handleSignal(data) {
 
         pc.onicecandidate = event => {
             if (event.candidate){
+                console.log("Sending ICE candidate to", peerId, event.candidate);
                 socket.send(JSON.stringify({
                     action : 'signal',
                     target_id : fromId,
@@ -138,6 +153,7 @@ async function handleSignal(data) {
                 document.body.appendChild(audio);
             }
             audio.srcObject = event.streams[0];
+            console.log("Remote track received", event.streams);
             audio.play().catch(e => console.warn("Autoplay blocked:", e));
 
         };
@@ -159,6 +175,7 @@ async function handleSignal(data) {
     } else if (signal.type === 'answer'){
         await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
     } else if (signal.type === 'candidate'){
+        console.log("Receiving ICE candidate from", fromId, signal.candidate);
         await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
     }
 }
@@ -176,3 +193,21 @@ function closeConnection(peerId){
     await startMedia();
     connectWebSocket();
 })();
+
+function castVote(userId) {
+    socket.send(JSON.stringify({
+        action: "vote",
+        voted_for: userId
+    }));
+}
+
+function updateVoteChart(results) {
+    for (const userId in results) {
+        const percentage = results[userId];
+        const bar = document.getElementById(`vote-bar-${userId}`);
+        if (bar) {
+            bar.style.width = `${percentage}%`;
+            bar.textContent = `${percentage}%`;
+        }
+    }
+}

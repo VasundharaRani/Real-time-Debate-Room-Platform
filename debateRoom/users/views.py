@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.conf import settings
 from django.shortcuts import render,redirect
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.urls import reverse
 from django.contrib.auth.views import LoginView
 from .models import CustomUser

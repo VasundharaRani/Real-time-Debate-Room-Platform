@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from datetime import timedelta
 from django.contrib.auth import get_user_model
  
 
@@ -25,8 +26,9 @@ class DebateRoom(models.Model):
     winner_declared = models.BooleanField(default=False)
     winner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='won_debates')
 
+    @property
     def is_debate_over(self):
-        if not self.is_live or not self.start_time:
+        if not self.start_time:
             return False
         elapsed = (timezone.now() - self.start_time).total_seconds()
         return elapsed >= self.timer_per_round

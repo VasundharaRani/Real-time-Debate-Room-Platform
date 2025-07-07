@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
@@ -7,10 +8,15 @@ from django.db.models import F, ExpressionWrapper, DateTimeField, DurationField,
 from django.utils import timezone
 from django.db import models
 from django.db.models import Min
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from .models import DebateRoom, RoomParticipant,Vote
 from .forms import DebateRoomForm
 from django.contrib import messages
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 import datetime
+import json
 User = get_user_model()
 
 # Create your views here.
@@ -29,12 +35,16 @@ def dashboard(request):
         room__start_time__isnull=True  # to make sure it's a finished debate
     )
 
+    # Public live rooms (user may not be a participant)
+    public_live_rooms = DebateRoom.objects.filter(is_private=False, is_live=True, winner_declared=False)
+
     featured_rooms = DebateRoom.objects.filter(is_featured = True)
     return render(request, 'debates/dashboard.html',{
         'live_rooms' : live_rooms,
         'upcoming_rooms': upcoming_rooms,
         'past_rooms' : past_rooms,
         'featured_rooms' : featured_rooms,
+        'public_live_rooms' : public_live_rooms
     })
 
 @login_required
@@ -121,9 +131,19 @@ def debate_room_detail(request, room_id):
     debaters = User.objects.filter(id__in=debater_ids)
     my_role = participants.filter(user=request.user).first().role
 
-    if room.is_live and room.is_debate_over():
+
+    if room.is_live and room.is_debate_over and not room.winner_declared:
         room.is_live = False
+        room.winner_declared = True
+
+        # Auto-declare winner
+        top_vote = Vote.objects.filter(room=room).values('voted_for') \
+                        .annotate(count=Count('id')).order_by('-count').first()
+        if top_vote:
+            winner_user = get_object_or_404(User, id=top_vote['voted_for'])
+            room.winner = winner_user
         room.save()
+
 
     return render(request, 'debates/room_detail.html',{
         'room' : room,
@@ -131,7 +151,7 @@ def debate_room_detail(request, room_id):
         'is_moderator_or_host' : is_moderator_or_host,
         'debater_ids' : debater_ids,
         'debaters' : debaters,
-        'my_role' : my_role
+        'my_role' : my_role,
     })
 
 @login_required
@@ -190,9 +210,7 @@ def start_debate(request,room_id):
         room.save()
         messages.success(request,"Debate started successfully.")
 
-    return render(request, 'debates/room_detail.html', {
-    'room': room
-})
+    return redirect('debate_room_detail', room_id=room.id)
 
 @login_required
 def submit_vote(request,room_id):
@@ -236,7 +254,10 @@ def vote_stats(request,room_id):
             'percentage': percentage
         })
 
-    return JsonResponse({'votes': results})
+    return JsonResponse({
+        'votes': results,
+        "winner_name": room.winner.username if room.winner else None
+    })
 
 @login_required
 def declare_winner(request, room_id):
@@ -244,7 +265,13 @@ def declare_winner(request, room_id):
 
     if not RoomParticipant.objects.filter(room=room, user=request.user, role='moderator').exists():
         return HttpResponseForbidden("Only moderators can declare winner")
+    # Ensure the debate has ended
+    if not room.is_debate_over:
+        return HttpResponseBadRequest("Cannot declare winner before the debate ends")
 
+    # Only allow if winner not already declared
+    if room.winner_declared:
+        return HttpResponseBadRequest("Winner has already been declared")
     # Get top-voted debater
     top_vote = Vote.objects.filter(room=room).values('voted_for').annotate(count=Count('id')).order_by('-count').first()
     if top_vote:
@@ -254,3 +281,44 @@ def declare_winner(request, room_id):
         room.save()
 
     return redirect('debate_room_detail', room_id=room.id)
+
+@login_required
+@require_POST
+def auto_declare_winner(request, room_id):
+    room = get_object_or_404(DebateRoom, id=room_id)
+
+    # Only allow declaration if debate is over and no winner declared
+    if not room.is_debate_over or room.winner_declared:
+        return JsonResponse({'success': False, 'error': 'Cannot declare winner now'}, status=400)
+
+    # Get top-voted debater
+    top_vote = Vote.objects.filter(room=room).values('voted_for').annotate(count=Count('id')).order_by('-count').first()
+    if top_vote:
+        winner_user = get_object_or_404(User, id=top_vote['voted_for'])
+        room.winner = winner_user
+        room.winner_declared = True
+        room.is_live = False  # End the debate explicitly
+        room.save()
+        return JsonResponse({'success': True, 'winner_name': winner_user.username})
+
+    return JsonResponse({'success': False, 'error': 'No votes found'})
+
+def moderator_control(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        action = data.get("action")
+        target_user_id = str(data.get("target_user_id"))
+        room_id = str(data.get("room_id"))
+
+        # Send WebSocket control message
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"debate_room_{room_id}",
+            {
+                "type": "moderator-control",
+                "action": action,
+                "target_user_id": target_user_id,
+            }
+        )
+
+        return JsonResponse({"success": True, "message": f"{action.title()} sent to user {target_user_id}."})

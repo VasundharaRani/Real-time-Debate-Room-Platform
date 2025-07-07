@@ -2,136 +2,200 @@
 {% load static %}
 {% block body %}
 
-    <h2>{{room.title}}</h2>
-    <p>{{room.description}}</p>
+<h2>{{ room.title }}</h2>
+<p>{{ room.description }}</p>
 
-    <h3>Participants</h3>
-    <ul>
-        {% for participant in participants %}
-        <li>{{participant.user.username}} - {{participant.role}}</li>
-        {% endfor %}
-    </ul>
+<h3>Participants</h3>
+<ul>
+  {% for participant in participants %}
+  <li>{{ participant.user.username }} - {{ participant.role }}</li>
+  {% endfor %}
+</ul>
 
-    <!-- Voting Form for Audience -->
-    {% if my_role == 'audience' and room.is_live and not room.winner_declared %}
-        <h3>Vote for the Winner</h3>
-        <form id="vote-form">
-            {% csrf_token %}
-            {% for debater in debaters %}
-                <button type="submit" name="voted_for" value="{{ debater.id }}">
-                    {{ debater.username }}
-                </button>
-            {% endfor %}
-        </form>
-    {% endif %}
+<!-- Voting Form for Audience -->
+{% if my_role == 'audience' and room.is_live and not room.winner_declared %}
+<h3>Vote for the Winner</h3>
+<form id="vote-form">
+  {% csrf_token %}
+  {% for debater in debaters %}
+  <button type="submit" name="voted_for" value="{{ debater.id }}">{{ debater.username }}</button>
+  {% endfor %}
+</form>
+{% endif %}
 
+<!--Moderator starts the debate-->
+{% if is_moderator_or_host and not room.is_live and not room.is_debate_over%}
+<form method="post" action="{% url 'start_debate' room.id %}">
+  {% csrf_token %}
+  <button type="submit">Start Debate</button>
+</form>
+{% endif %}
 
-    {% if is_moderator_or_host and not room.is_live %}
-        <form method="post" action="{% url 'start_debate' room.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">Start Debate</button>
-        </form>
-    {% endif %}
-    {% if room.is_live %}
-        <p style="color: green;"><strong>The debate is now live!</strong></p>
-    {% endif %}  
+<!-- Debate status -->
+{% if room.is_live %}
+<p style="color: green;"><strong>The debate is now live!</strong></p>
+{% elif room.is_debate_over %}
+<p style="color: red;"><strong>The debate has ended.</strong></p>
+{% else %}
+<p><em>The debate has not started yet.</em></p>
+{% endif %}
 
-    {% if is_moderator_or_host %}
-        <form action="{% url 'toggle_room_entry' room.id %}" method="post">
-            {% csrf_token %}
-            <button type="submit">
-                {% if room.allow_entry %} Lock Room {% else %} Reopen Room {% endif %}
-            </button>
-        </form>
-    {% endif %}
+<!-- Always render stats and timer -->
+{% if room.is_live %}
+<div id="vote-stats">
+  <h4>Live Voting Stats</h4>
+  <div id="vote-results">
+    <p>Loading...</p>
+  </div>
+  <div id="winner-display"></div>
+</div>
+<div id="debate-timer">Time left: --:--</div>
+{% endif %}
 
-    <!-- Real-Time Vote Stats -->
-    {% if room.is_live %}
-        <div id="vote-stats">
-            <h4>Live Voting Stats</h4>
-            <p>Loading...</p>
-        </div>
-    {% endif %}
+{% if my_role == 'moderator' %}
+  <h4>Moderator Controls</h4>
+  <label for="debater-select">Select Debater:</label>
+  <select id="debater-select" onchange="updateControlButtons()">
+    <option value="" disabled selected>Select a debater</option>
+    {% for participant in participants %}
+      {% if participant.role == "debater" %}
+        <option value="{{ participant.user.id }}" data-muted="{{ participant.is_muted|yesno:'true,false' }}">
+          {{ participant.user.username }}
+        </option>
+      {% endif %}
+    {% endfor %}
+  </select>
 
+  <div id="control-buttons" style="margin-top: 10px; display: none;">
+    <button id="mute-icon-btn" title="Mute" onclick="handleMuteClick()">
+      <i class="fas fa-microphone-slash"></i>
+    </button>
+    <button id="kick-icon-btn" title="Kick" onclick="handleKickClick()">
+      <i class="fas fa-sign-out-alt"></i>
+    </button>
+  </div>
+{% endif %}
 
-    {% if room.is_live %}
-    <div id="debate-timer">Time left: --:--</div>
-    {% if my_role == "debater" %}
-        <button id="mute-btn" onclick="toggleMute()">Mute</button>
-    {% endif %}
-    <script>
-        const startTime = new Date("{{ room.start_time|date:'c' }}");
-        const now = new Date();
-        const totalSeconds = parseInt("{{ room.timer_per_round|default:300 }}");
-        let remaining = totalSeconds - Math.floor((now - startTime) / 1000);
-        if (remaining < 0) remaining = 0;
+{% if my_role == 'debater' %}
+  <div style="margin-top: 10px;">
+    <button id="debater-mute-toggle" onclick="toggleDebaterMute()">
+      <i id="debater-mute-icon" class="fas fa-microphone"></i>
+    </button>
+  </div>
+{% endif %}
 
-        function updateTimer() {
-            if (remaining > 0) {
-                const minutes = Math.floor(remaining / 60);
-                const seconds = remaining % 60;
-                document.getElementById("debate-timer").innerText = `Time left: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-                remaining--;
-            } else {
-                document.getElementById("debate-timer").innerText = "Time's up!";
-            }
-        }
+<!-- Countdown timer script -->
+{% if room.is_live %}
+<script>
+  const startTime = new Date("{{ room.start_time|date:'c' }}");
+  const now = new Date();
+  const totalSeconds = parseInt("{{ room.timer_per_round|default:300 }}");
+  let remaining = totalSeconds - Math.floor((now - startTime) / 1000);
+  if (remaining < 0) remaining = 0;
 
-        updateTimer();
-        setInterval(updateTimer, 1000);
-    </script>
+  function updateTimer() {
+    if (remaining > 0) {
+      const minutes = Math.floor(remaining / 60);
+      const seconds = remaining % 60;
+      document.getElementById("debate-timer").innerText = `Time left: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+      remaining--;
+    } else {
+      document.getElementById("debate-timer").innerText = "Time's up!";
+    }
+  }
+  updateTimer();
+  setInterval(updateTimer, 1000);
+</script>
+{% endif %}
 
-    <script>
-        const roomSlugOrId = "{{ room.id }}";
-    </script>
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-    <script src="{% static 'debates/js/agora.js' %}"></script>
-    {% else %}
-        <p><em>The debate has not started yet.</em></p>
-    {% endif %}
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const voteForm = document.getElementById("vote-form");
-            const voteStatsContainer = document.getElementById("vote-stats");
-        
-            if (voteForm) {
-                voteForm.addEventListener("submit", async (e) => {
-                    e.preventDefault();
-                    const votedFor = e.submitter.value;
-                    const response = await fetch("{% url 'submit_vote' room.id %}", {
-                        method: "POST",
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}',
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `voted_for=${votedFor}`
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        alert("✅ Vote submitted!");
-                    } else {
-                        alert("❌ " + (data.error || "Vote failed"));
-                    }
-                });
-            }
-        
-            async function fetchVoteStats() {
-                try {
-                    const res = await fetch("{% url 'vote_stats' room.id %}");
-                    const data = await res.json();
-                    voteStatsContainer.innerHTML = "<h4>Live Voting Stats</h4>";
-                    data.votes.forEach(vote => {
-                        voteStatsContainer.innerHTML += `
-                            <p><strong>${vote.name}</strong>: ${vote.percentage}% (${vote.count} votes)</p>
-                        `;
-                    });
-                } catch (err) {
-                    console.error("Vote stats fetch error:", err);
-                }
-            }
-        
-            setInterval(fetchVoteStats, 3000); // Poll every 3s
+<!-- Auto Declare Winner -->
+{% if room.is_live and not room.winner_declared %}
+<script>
+  const msUntilEnd = (startTime.getTime() + totalSeconds * 1000) - Date.now();
+  if (msUntilEnd > 0) {
+    setTimeout(() => {
+      document.getElementById("debate-timer").innerText = "Time's up!";
+      fetch("{% url 'auto_declare_winner' room.id %}", {
+        method: "POST",
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) fetchVoteStats();
         });
-    </script>        
+    }, msUntilEnd);
+  }
+</script>
+{% endif %}
+
+<!-- Voting Logic -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const voteForm = document.getElementById("vote-form");
+    const voteResults = document.getElementById("vote-results");
+    const winnerDisplay = document.getElementById("winner-display");
+
+    async function fetchVoteStats() {
+      const voteResults = document.getElementById("vote-results");
+      const winnerDisplay = document.getElementById("winner-display");
+
+      if (!voteResults || !winnerDisplay) return; // Prevent error if not found
+
+      try {
+        const res = await fetch("{% url 'vote_stats' room.id %}");
+        const data = await res.json();
+
+        voteResults.innerHTML = "";
+        data.votes.forEach(vote => {
+          voteResults.innerHTML += `<p><strong>${vote.name}</strong>: ${vote.percentage}% (${vote.count} votes)</p>`;
+        });
+
+        if (data.winner_name && !winnerDisplay.innerHTML.includes(data.winner_name)) {
+          winnerDisplay.innerHTML = `<p><strong>Winner:</strong> ${data.winner_name}</p>`;
+          if (voteForm) voteForm.remove();
+        }
+      } catch (err) {
+        console.error("Vote stats error:", err);
+      }
+    }
+
+    if (voteForm) {
+      voteForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const votedFor = e.submitter.value;
+        const response = await fetch("{% url 'submit_vote' room.id %}", {
+          method: "POST",
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `voted_for=${votedFor}`
+        });
+        const data = await response.json();
+        if (data.success) {
+          alert("Vote submitted!");
+          fetchVoteStats();
+        } else {
+          alert(data.error || "Vote failed");
+        }
+      });
+    }
+
+    fetchVoteStats();
+    setInterval(fetchVoteStats, 5000);
+  });
+</script>
+
+<!-- Agora and room data -->
+<script>
+  const myRole = "{{ my_role|escapejs }}";  // debater / audience / moderator
+  const roomId = "{{ room.id }}";
+  const currentUserId = "{{ request.user.id }}";
+  const dashboardUrl = "{% url 'dashboard' %}";
+</script>
+
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+<script src="{% static 'debates/js/agora.js' %}"></script>
+
+
 {% endblock %}

@@ -11,4 +11,7 @@ urlpatterns = [
     path('room/<int:room_id>/toogle-entry/',views.toggle_room_entry,name="toggle_room_entry"),
     path('room/<int:room_id>/vote/', views.submit_vote, name='submit_vote'),
     path('room/<int:room_id>/vote-stats/', views.vote_stats, name='vote_stats'),
+    path('debates/<int:room_id>/declare-winner/', views.declare_winner, name='declare_winner'),
+    path('debates/auto-declare-winner/<int:room_id>/', views.auto_declare_winner, name='auto_declare_winner'),
+    path('moderator/control/<int:room_id>/', views.moderator_control, name='moderator_control')
 ]
