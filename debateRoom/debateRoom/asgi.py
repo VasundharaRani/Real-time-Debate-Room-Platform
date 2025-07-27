@@ -17,13 +17,13 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'debateRoom.settings')
 django.setup()
 
 import debates.routing
-import chat.routing 
+import chats.routing 
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter(
-            debates.routing.websocket_urlpatterns + chat.routing.websocket_urlpatterns 
+            debates.routing.websocket_urlpatterns + chats.routing.websocket_urlpatterns 
         )
     ),
 })

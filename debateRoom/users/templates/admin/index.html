@@ -11,5 +11,17 @@
     {% endif %}
   </div>
 
+  <div class="module">
+    <h2>Recent Login Requests by Unapproved Users</h2>
+    {% if login_attempts_count > 0 %}
+      <ul>
+        {% for attempt in latest_login_attempts %}
+          <li>{{ attempt.user.username }} at {{ attempt.requested_at|date:"Y-m-d H:i" }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No login attempts from unapproved users.</p>
+    {% endif %}
+  </div>
   {{ block.super }}
 {% endblock %}

@@ -6,6 +6,8 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
 from django.db.models import F, ExpressionWrapper, DateTimeField, DurationField, Count
 from django.utils import timezone
+from django.db.models.functions import Now
+from django.db.models.expressions import RawSQL
 from django.db import models
 from django.db.models import Min
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +17,7 @@ from .forms import DebateRoomForm
 from django.contrib import messages
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.db.models import Count
 import datetime
 import json
 User = get_user_model()
@@ -168,13 +171,11 @@ def toggle_room_entry(request,room_id):
 @login_required
 def debate_room_list(request):
     now = timezone.now()
-    
-   
-    # Only show live debates that are not over yet
+
+    # LIVE ROOMS with annotated end_time
     live_rooms = DebateRoom.objects.annotate(
-        end_time=ExpressionWrapper(
-            F('start_time') + ExpressionWrapper(F('timer_per_round') * 1.0, output_field=DurationField()),
-            output_field=DateTimeField()
+        end_time=RawSQL(
+            "start_time + (timer_per_round || ' minutes')::interval", []
         )
     ).filter(
         is_private=False,
@@ -183,17 +184,17 @@ def debate_room_list(request):
         end_time__gt=now
     ).order_by('start_time')
 
-    # Upcoming ones (not live yet)
+    # UPCOMING ROOMS
     upcoming_rooms = DebateRoom.objects.filter(
         is_private=False,
         is_live=False
     ).order_by('start_time')
-    
-    return render(request,'debates/room_list.html',{
-        'live_rooms' : live_rooms,
-        'upcoming_rooms' : upcoming_rooms
-    })
 
+    return render(request, 'debates/room_list.html', {
+        'live_rooms': live_rooms,
+        'upcoming_rooms': upcoming_rooms
+    })
+    
 @login_required
 def start_debate(request,room_id):
     room = get_object_or_404(DebateRoom, id = room_id)
@@ -240,8 +241,8 @@ def submit_vote(request,room_id):
     return JsonResponse({'success': True})
 
 @login_required
-def vote_stats(request,room_id):
-    room = get_object_or_404(DebateRoom,id =room_id)
+def vote_stats(request, room_id):
+    room = get_object_or_404(DebateRoom, id=room_id)
     total_votes = Vote.objects.filter(room=room).count()
 
     vote_counts = Vote.objects.filter(room=room).values('voted_for__username').annotate(count=Count('id'))
@@ -254,9 +255,21 @@ def vote_stats(request,room_id):
             'percentage': percentage
         })
 
+    winner_name = None
+    if room.winner:
+        winner_name = room.winner.username
+    elif room.winner_declared:
+        # Check if tie exists
+        grouped_votes = Vote.objects.filter(room=room).values('voted_for', 'voted_for__username').annotate(count=Count('id')).order_by('-count')
+        if grouped_votes:
+            max_count = grouped_votes[0]['count']
+            top_users = [v['voted_for__username'] for v in grouped_votes if v['count'] == max_count]
+            if len(top_users) > 1:
+                winner_name = "Tie between: " + ", ".join(top_users)
+
     return JsonResponse({
         'votes': results,
-        "winner_name": room.winner.username if room.winner else None
+        'winner_name': winner_name
     })
 
 @login_required
@@ -264,21 +277,31 @@ def declare_winner(request, room_id):
     room = get_object_or_404(DebateRoom, id=room_id)
 
     if not RoomParticipant.objects.filter(room=room, user=request.user, role='moderator').exists():
-        return HttpResponseForbidden("Only moderators can declare winner")
-    # Ensure the debate has ended
-    if not room.is_debate_over:
-        return HttpResponseBadRequest("Cannot declare winner before the debate ends")
+        return HttpResponseForbidden("Only moderators can declare the winner.")
 
-    # Only allow if winner not already declared
+    if not room.is_debate_over:
+        return HttpResponseBadRequest("Cannot declare winner before the debate ends.")
+
     if room.winner_declared:
-        return HttpResponseBadRequest("Winner has already been declared")
-    # Get top-voted debater
-    top_vote = Vote.objects.filter(room=room).values('voted_for').annotate(count=Count('id')).order_by('-count').first()
-    if top_vote:
-        winner_user = get_object_or_404(User, id=top_vote['voted_for'])
+        return HttpResponseBadRequest("Winner has already been declared.")
+
+    # Count votes
+    vote_counts = Vote.objects.filter(room=room).values('voted_for').annotate(count=Count('id'))
+    if not vote_counts:
+        return HttpResponseBadRequest("No votes to declare winner.")
+
+    max_count = max(v['count'] for v in vote_counts)
+    top_voted = [v['voted_for'] for v in vote_counts if v['count'] == max_count]
+
+    if len(top_voted) == 1:
+        winner_user = get_object_or_404(User, id=top_voted[0])
         room.winner = winner_user
-        room.winner_declared = True
-        room.save()
+    else:
+        room.winner = None  # Tie: no single winner
+
+    room.winner_declared = True
+    room.is_live = False
+    room.save()
 
     return redirect('debate_room_detail', room_id=room.id)
 
@@ -287,21 +310,55 @@ def declare_winner(request, room_id):
 def auto_declare_winner(request, room_id):
     room = get_object_or_404(DebateRoom, id=room_id)
 
-    # Only allow declaration if debate is over and no winner declared
     if not room.is_debate_over or room.winner_declared:
         return JsonResponse({'success': False, 'error': 'Cannot declare winner now'}, status=400)
 
-    # Get top-voted debater
-    top_vote = Vote.objects.filter(room=room).values('voted_for').annotate(count=Count('id')).order_by('-count').first()
-    if top_vote:
-        winner_user = get_object_or_404(User, id=top_vote['voted_for'])
-        room.winner = winner_user
-        room.winner_declared = True
-        room.is_live = False  # End the debate explicitly
-        room.save()
-        return JsonResponse({'success': True, 'winner_name': winner_user.username})
+    vote_counts = Vote.objects.filter(room=room) \
+        .values('voted_for') \
+        .annotate(count=Count('id')) \
+        .order_by('-count')
 
-    return JsonResponse({'success': False, 'error': 'No votes found'})
+    if not vote_counts:
+        return JsonResponse({'success': False, 'error': 'No votes found'})
+
+    top_count = vote_counts[0]['count']
+    top_ids = [v['voted_for'] for v in vote_counts if v['count'] == top_count]
+
+    if len(top_ids) > 1:
+        tied_users = User.objects.filter(id__in=top_ids)
+        tied_usernames = [user.username for user in tied_users]
+
+        room.winner = None
+        room.winner_declared = True
+        room.is_live = False
+        room.save()
+
+        return JsonResponse({'success': True, 'winner_name': f"Tie between: {', '.join(tied_usernames)}"})
+
+    winner_user = get_object_or_404(User, id=top_ids[0])
+    room.winner = winner_user
+    room.winner_declared = True
+    room.is_live = False
+    room.save()
+
+    response_data = {
+    'votes': results,
+    }
+
+    if room.winner:
+        response_data["winner_name"] = room.winner.username
+    elif room.winner_declared:
+        # Check if tie was declared
+        top_votes = Vote.objects.filter(room=room).values('voted_for').annotate(count=Count('id')).order_by('-count')
+        if top_votes:
+            top_count = top_votes[0]['count']
+            top_ids = [v['voted_for'] for v in top_votes if v['count'] == top_count]
+            if len(top_ids) > 1:
+                tied_users = User.objects.filter(id__in=top_ids)
+                response_data["winner_name"] = "Tie between: " + ", ".join(user.username for user in tied_users)
+
+    return JsonResponse(response_data)
+
 
 def moderator_control(request):
     if request.method == "POST":
@@ -322,3 +379,11 @@ def moderator_control(request):
         )
 
         return JsonResponse({"success": True, "message": f"{action.title()} sent to user {target_user_id}."})
+
+@login_required
+def room_detail(request, room_id):
+    room = get_object_or_404(Room, id=room_id)
+    return render(request, 'debates/room_detail.html', {
+        'room': room,
+        'username': request.user.username
+    })

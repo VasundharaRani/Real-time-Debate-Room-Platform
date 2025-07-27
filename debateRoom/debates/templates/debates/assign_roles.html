@@ -1,40 +1,55 @@
 {% extends "debates/layout.html" %}
-
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'debates/css/assignRoles.css' %}">
+{% endblock %}
 {% block body %}
-    <h2>Assign Roles in {{room.title}}</h2>
-    <form method = "post">
-        {% csrf_token %}
-        <label for = "user_id">Select user: </label>
-        <select name="user_id">
-            {% for user in all_users %}
-            <option value="{{user.id}}">{{user.username}}</option>
-            {% endfor %}
-        </select>
+<div class="assign-layout">
 
-        <label for="role">Role: </label>
-        <select name="role">
-            <option value="audience">Audience</option>
-            <option value="debater"{% if debater_limit_reached %}disabled{% endif %}>Debator</option>
-            <option value="moderator">Moderator</option>
-        </select>
-        {% if debater_limit_reached %}
-        <p style="color: red;">Only 2 debaters are allowed in 1v1 debates.</p>
-        {% endif %}
+  <div class="form-card">
+    <h2>Assign Roles in {{ room.title }}</h2>
+    <form method="post">
+      {% csrf_token %}
 
-        <button type="submit">Assign Role</button>
+      <label for="user_id">Select user:</label>
+      <select name="user_id" required>
+        {% for user in all_users %}
+          <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="role">Role:</label>
+      <select name="role" required>
+        <option value="audience">Audience</option>
+        <option value="debater" {% if debater_limit_reached %}disabled{% endif %}>Debater</option>
+        <option value="moderator">Moderator</option>
+      </select>
+
+      {% if debater_limit_reached %}
+        <p class="warning">Only 2 debaters are allowed in 1v1 debates.</p>
+      {% endif %}
+
+      <button type="submit">Assign Role</button>
     </form>
 
     {% if messages %}
+      <div class="messages">
         {% for message in messages %}
-            {{message}}
+          <p>{{ message }}</p>
         {% endfor %}
+      </div>
     {% endif %}
+  </div>
 
+  <div class="participants-card">
     <h3>Current Participants</h3>
     <ul>
-        {% for participant in participants %}
-        <li>{{participant.user.username}} - {{participant.role}}</li>
-        {% endfor %}
+      {% for participant in participants %}
+        <li>{{ participant.user.username }} - <span class="role">{{ participant.role }}</span></li>
+      {% endfor %}
     </ul>
-    <a href="{% url 'debate_room_detail' room.id %}">Enter Room</a>
+    <a class="btn enter-room-btn" href="{% url 'debate_room_detail' room.id %}">Enter Room</a>
+  </div>
+
+</div>
 {% endblock %}

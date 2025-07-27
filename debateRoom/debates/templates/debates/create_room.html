@@ -1,9 +1,15 @@
 {% extends "debates/layout.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'debates/css/createRoom.css' %}">
+{% endblock %}
 {% block body %}
-<h2>Create Debate Room</h2>
-<form action="{% url 'create_debate_room' %}" method = "post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Create Debate Room</button>
-</form>
+<div class="create-room-container">
+    <h2>Create Debate Room</h2>
+    <form action="{% url 'create_debate_room' %}" method="post" class="create-room-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create Debate Room</button>
+    </form>
+</div>
 {% endblock %}

@@ -4,20 +4,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css">
     <title>Debates</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'debates/css/room_detail.css' %}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css">
+    {% block extra_css %}{% endblock %}
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            z-index: 999;
+        }
+  
+        .navbar-logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+  
+        .navbar-links {
+            display: flex;
+            gap: 1rem;
+        }
+  
+        .navbar-links a {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            color: #333;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+  
+        .navbar-links a:hover {
+            background-color: #f0f0f0;
+        }
+  
+        .navbar .button-primary {
+            background-color: #FF7A59;
+            color: white;
+            font-weight: bold;
+        }
+  
+        .navbar .button-primary:hover {
+            background-color: #ff633f;
+        }
+  
+        @media screen and (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+  
+            .navbar-links {
+                flex-direction: column;
+                width: 100%;
+                padding-top: 0.5rem;
+            }
+  
+            .navbar-links a {
+                width: 100%;
+            }
+        }
+      </style>
 </head>
 <body>
-    <div class="navbar">
-        <a href="{% url 'debate_room_list' %}" class="button">Debate Rooms</a>
-        <a href="{% url 'dashboard' %}" class="button">Dashboard</a>
-        <a href="{% url 'logout' %}" class="button">Logout</a>
-        {% if user.is_authenticated and user.role == 'moderator' and user.is_approved %}
-            <a href="{% url 'create_debate_room' %}" class="button">Create Debate Room</a>
-        {% endif %}
-    </div>
-
+    <nav class="navbar">
+        <div class="navbar-logo">
+            <i class="fas fa-comments"></i> Debate Platform
+        </div>
+        <div class="navbar-links">
+            <!-- <a href="{% url 'debate_room_list' %}">Debate Rooms</a> -->
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            {% if user.is_authenticated and user.role == 'moderator' and user.is_approved %}
+                <a href="{% url 'create_debate_room' %}">Create Room</a>
+            {% endif %}
+            <a href="{% url 'logout' %}" class="button-primary">Logout</a>
+        </div>
+    </nav>
     {% block body %}
     {% endblock %}
 </body>

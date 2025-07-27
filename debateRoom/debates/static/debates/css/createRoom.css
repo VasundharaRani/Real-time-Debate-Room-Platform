@@ -1,0 +1,99 @@
+body {
+    padding-top: 5rem;
+}
+
+.create-room-container {
+    max-width: 20rem; 
+    margin: 1rem auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.1);
+    text-align: left;
+    backdrop-filter: blur(0.25rem);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.create-room-container:hover {
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12);
+    transform: translateY(-0.15rem);
+}
+
+.create-room-container h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: 600;
+    color: #333;
+}
+
+.create-room-form label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    display: block;
+    color: #444;
+}
+
+.create-room-form input[type="text"],
+.create-room-form textarea,
+.create-room-form select {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    border: 0.0625rem solid #ccc;
+    border-radius: 0.4rem;
+    box-sizing: border-box;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.create-room-form input:focus,
+.create-room-form textarea:focus,
+.create-room-form select:focus {
+    outline: none;
+    border-color: #ff6b5c;
+    box-shadow: 0 0 0 0.15rem rgba(255, 107, 92, 0.15);
+}
+
+.create-room-form input[type="checkbox"] {
+    transform: scale(1.1);
+    margin-left: 0.4rem;
+    vertical-align: middle;
+}
+
+.create-room-form button[type="submit"] {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+    background-color: #ff6b5c;
+    color: white;
+    border: none;
+    border-radius: 0.4rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.create-room-form button[type="submit"]:hover {
+    background-color: #e05548;
+    transform: scale(1.02);
+}
+
+@media (max-width: 480px) {
+    .create-room-container {
+        margin: 2rem 1rem;
+        padding: 1.5rem;
+    }
+
+    .create-room-container h2 {
+        font-size: 1.1rem;
+    }
+
+    .create-room-form input,
+    .create-room-form textarea,
+    .create-room-form select,
+    .create-room-form button {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+    }
+}

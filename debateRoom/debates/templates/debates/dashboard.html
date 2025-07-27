@@ -1,67 +1,85 @@
 {% extends "debates/layout.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'debates/css/dashboard.css' %}">
+{% endblock %}
 {% block body %}
-
-    <div class="container">
-        <h2>Welcome {{user.username}}</h2>
-        <div class="section">
-            <h3>Live Public Debates</h3>
-            <ul>
+<div class="dashboard-container">
+    <h2 class="dashboard-title">Welcome {{ user.username }}</h2>
+  
+    <div class="dashboard-columns">
+  
+      <!-- LEFT COLUMN -->
+      <div class="column">
+        <div class="card">
+          <h3>Live Public Debates</h3>
+          <ul>
             {% for room in public_live_rooms %}
-                <li>
+              <li>
                 <a href="{% url 'debate_room_detail' room.id %}">
-                    {{ room.title }} ({{ room.topic }})
+                  {{ room.title }} ({{ room.topic }})
                 </a>
-                </li>
+              </li>
             {% empty %}
-                <li>No public live debates right now.</li>
+              <li>No public live debates right now.</li>
             {% endfor %}
-            </ul>
-            <h3>Live Debates</h3>
-            <ul>
-                {% for participant in live_rooms %}
-                <li>{{ participant.room.title}} - Role : {{participant.role}}
-                    <a href="{% url 'debate_room_detail' participant.room.id %}">Join</a>
-                </li>
-                {% empty %}
-                <li>No Live debates</li>
-                {% endfor %}
-            </ul>
+          </ul>
         </div>
-
-        <div class="section">
-            <h3>Upcoming Debates</h3>
-            <ul>
-                {% for participant in upcoming_rooms %}
-                <li>{{ participant.room.title}} - Role : {{participant.role}}
-                    <a href="{% url 'debate_room_detail' participant.room.id %}">Join</a>
-                </li>
-                {% empty %}
-                <li>No Upcoming debates</li>
-                {% endfor %}
-            </ul>
+  
+        <div class="card">
+          <h3>Your Live Debates</h3>
+          <ul>
+            {% for participant in live_rooms %}
+              <li>
+                {{ participant.room.title }} - Role: {{ participant.role }}
+                <a href="{% url 'debate_room_detail' participant.room.id %}">Join</a>
+              </li>
+            {% empty %}
+              <li>No Live debates</li>
+            {% endfor %}
+          </ul>
         </div>
-
-        <div class="section">
-            <h3>Past Debates</h3>
-            <ul>
-                {% for participant in past_rooms %}
-                <li>{{participant.room.title}} - Role : {{participant.role}}</li>
-                {% empty %}
-                <li>No Past debates</li>
-                {% endfor %}
-            </ul>
+  
+        <div class="card">
+          <h3>Upcoming Debates</h3>
+          <ul>
+            {% for participant in upcoming_rooms %}
+              <li>
+                {{ participant.room.title }} - Role: {{ participant.role }}
+                <a href="{% url 'debate_room_detail' participant.room.id %}">Join</a>
+              </li>
+            {% empty %}
+              <li>No Upcoming debates</li>
+            {% endfor %}
+          </ul>
         </div>
-
-        <div class="section">
-            <h3>Featured Debates</h3>
-            <ul>
-                {% for room in featured_rooms %}
-                <li>{{ room.title }} - {{ room.description }}</li>
-                {% empty %}
-                <li>No featured debates currently.</li>
-                {% endfor %}
-            </ul>
+      </div>
+  
+      <!-- RIGHT COLUMN -->
+      <div class="column">
+        <div class="card">
+          <h3>Past Debates</h3>
+          <ul>
+            {% for participant in past_rooms %}
+              <li>{{ participant.room.title }} - Role: {{ participant.role }}</li>
+            {% empty %}
+              <li>No Past debates</li>
+            {% endfor %}
+          </ul>
         </div>
+  
+        <div class="card">
+          <h3>Featured Debates</h3>
+          <ul>
+            {% for room in featured_rooms %}
+              <li>{{ room.title }} - {{ room.description }}</li>
+            {% empty %}
+              <li>No featured debates currently.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+  
     </div>
-    
+  </div>
 {% endblock %}

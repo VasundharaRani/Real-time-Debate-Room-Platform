@@ -2,28 +2,51 @@
 {% load static %}
 
 {% block body %}
-  <div class="box">
-    {% if status == 'approved' %}
-      <h2 style="color: green;">Your account has been approved!</h2>
-      <p>You can now <a href="{% url 'login' %}">log in</a>.</p>
-    {% elif status == 'denied' %}
-      <h2 style="color: red;">Your registration was denied.</h2>
-      <p>If you believe this was a mistake, please contact the admin.</p>
-    {% elif status == 'pending' %}
-      <h2>Your account is awaiting approval.</h2>
-      <p>This page will automatically refresh every 30 seconds.</p>
-      <form method="get">
-        <button type="submit" class="button">Check Status</button>
-      </form>
+  <div class="pending_container">
+    <div class="pending-card">
+      {% if status == 'approved' %}
+          <h2 class="status-title">Approved!</h2>
+          <p class="status-msg">
+              Your account has been approved. You can now <a href="{% url 'login' %}">login</a>.
+          </p>
 
-      <script>
-        setTimeout(() => {
-          window.location.reload();
-        }, 30000);  // 30 seconds
-      </script>
-    {% else %}
-      <h2>⚠️ Invalid request.</h2>
-      <p>No registration information found.</p>
-    {% endif %}
+      {% elif status == 'denied' %}
+          <h2 class="status-title">Denied</h2>
+          <p class="status-msg">We're sorry, your registration was not approved.</p>
+
+      {% elif status == 'pending' %}
+          <h2 class="status-title">Awaiting Approval</h2>
+          <div class="loader"></div>
+          <p class="status-msg">Your request has been sent to the admin. Please wait for approval.</p>
+
+          <p>This page will automatically refresh every 30 seconds.</p>
+          <form method="get">
+            <button type="submit" class="button">Check Status</button>
+          </form>
+
+          <script>
+            setTimeout(() => {
+              window.location.reload();
+            }, 30000);  // 30 seconds
+          </script>
+
+      {% else %}
+          <h2 class="status-title">Unknown Status</h2>
+          <p class="status-msg">There was an issue checking your status. Please try again later.</p>
+
+          <div class="loader"></div>
+
+          <p>This page will automatically refresh every 30 seconds.</p>
+          <form method="get">
+            <button type="submit" class="button">Check Status</button>
+          </form>
+
+          <script>
+            setTimeout(() => {
+              window.location.reload();
+            }, 30000);  // 30 seconds
+          </script>
+      {% endif %}
+    </div>
   </div>
 {% endblock %}

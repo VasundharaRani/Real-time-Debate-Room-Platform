@@ -19,5 +19,5 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("role", "is_staff","is_active","is_approved")
     search_fields = ('username', 'email')
     ordering = ('-date_joined',)
-    list_editable = ('is_approved','role',) 
+    list_editable = ('is_approved','role','is_active') 
 custom_admin_site.register(CustomUser, CustomUserAdmin)

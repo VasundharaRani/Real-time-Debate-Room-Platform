@@ -1,0 +1,286 @@
+/* body {
+  padding-top: 5rem;
+}
+
+.debate-container {
+  background-color: rgba(255, 255, 255, 0.92);
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.room-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.room-description {
+  font-size: 1rem;
+  text-align: center;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  color: #444;
+  border-bottom: 2px solid #e6e6e6;
+  padding-bottom: 0.3rem;
+}
+
+.participants-list {
+  list-style: none;
+  padding: 0;
+  margin-left: 1rem;
+}
+
+.vote-form,
+.moderator-controls,
+.debater-controls,
+.chat-section,
+.vote-stats,
+.debate-status {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #fdfdff;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+}
+
+button,
+.vote-btn,
+.start-btn,
+#send-btn {
+  background-color: #8f6ba0;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin: 0.3rem;
+  transition: background 0.3s ease;
+}
+
+button:hover,
+.vote-btn:hover,
+#send-btn:hover {
+  background-color: #7a5890;
+}
+
+.live-status {
+  color: green;
+  font-weight: bold;
+}
+
+.ended-status {
+  color: #444;
+  font-style: italic;
+}
+
+.not-started {
+  color: #999;
+}
+
+#debater-mute-toggle,
+#mute-icon-btn,
+#kick-icon-btn {
+  background: #fff;
+  color: #8f6ba0;
+  border: 2px solid #8f6ba0;
+  padding: 0.4rem 0.8rem;
+  margin: 0.3rem;
+  border-radius: 8px;
+}
+
+#debater-mute-toggle:hover,
+#mute-icon-btn:hover,
+#kick-icon-btn:hover {
+  background: #7a5890;
+  color: white;
+}
+
+#chat-input {
+  width: calc(100% - 100px);
+  padding: 0.6rem;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+#send-btn {
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+#debate-timer {
+  font-weight: bold;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  text-align: center;
+} */
+
+/* Base Reset */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f5f0fa;
+  color: #2d2d2d;
+  overflow-y: auto;
+}
+
+/* Grid Layout */
+.room-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+/* Common Card Styles */
+.card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  margin-top: 3rem;
+}
+
+.section-title {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #5c3d99;
+}
+
+/* Title and Description */
+.room-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #6a1b9a;
+  margin-bottom: 0.5rem;
+}
+
+.room-description {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Participant List */
+.participants-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.participants-list li {
+  padding: 0.3rem 0;
+  border-bottom: 1px dashed #ddd;
+}
+
+/* Buttons */
+button,
+.vote-btn,
+.start-btn,
+.enter-room-btn {
+  background-color: #a682d9;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover,
+.vote-btn:hover,
+.start-btn:hover,
+.enter-room-btn:hover {
+  background-color: #8a5fd6;
+}
+
+.control-buttons button {
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+  padding: 0.4rem 0.7rem;
+}
+
+#debater-mute-toggle {
+  font-size: 1.3rem;
+  background: transparent;
+  color: #6a1b9a;
+  border: 2px solid #6a1b9a;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+}
+
+/* Timer, Live, Ended Status */
+.live-status {
+  color: rgb(3, 100, 3);
+  font-weight: bold;
+}
+
+.ended-status {
+  color: #555;
+}
+
+.not-started {
+  color: #888;
+}
+
+/* Chat Styles */
+.chat-section {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+
+.chat-box {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #fafafa;
+  overflow-y: auto;
+  max-height: 350px;
+  scrollbar-width: none;           
+  -ms-overflow-style: none;  
+}
+
+.chat-box::-webkit-scrollbar {
+  display: none;
+}
+
+.chat-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#send-btn {
+  padding: 0.6rem 1rem;
+}
+
+
+/* Responsive Design */
+@media (max-width: 900px) {
+  .room-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

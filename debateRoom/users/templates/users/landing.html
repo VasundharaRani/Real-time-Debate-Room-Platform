@@ -1,9 +1,25 @@
-{%extends "users/layout.html" %}
+{% extends "users/layout.html" %}
+{% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'users/landing.css' %}">
+{% endblock %}
 {% block body %}
-    <h1>Welcome to Debate Room Platform</h1>
-    <div class="navbar">
-        <a href="{%url 'register' %}">Register</a>
-        <a href="{%url 'login' %}">Login</a>
+<div class="landing-container">
+  <div class="hero-section">
+    <div class="hero-text">
+      <h1 class="hero-title">Where Ideas Collide, Voices Matter</h1>
+      <p class="hero-subtitle">
+        Join the Debate Room Platform to engage in meaningful discussions, challenge minds, and grow together.
+      </p>
+      <div class="hero-buttons">
+        <a href="{% url 'register' %}" class="hero-btn register">Get Started</a>
+        <a href="{% url 'login' %}" class="hero-btn login">Login</a>
+      </div>
     </div>
+    <div class="hero-image">
+      <img src="{% static 'users/debaters.jpeg' %}" alt="Debate Illustration">
+    </div>
+  </div>
+</div>
 {% endblock %}

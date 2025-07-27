@@ -1,0 +1,102 @@
+body{
+    padding-top: 5rem;
+}
+.assign-layout {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.form-card, .participants-card {
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    width: 400px;
+}
+
+.form-card h2,
+.participants-card h3 {
+    margin-bottom: 1rem;
+    color: #6a4f83;
+}
+
+label {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+    color: #333;
+}
+
+select,
+input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+button {
+    margin-top: 1.5rem;
+    padding: 0.6rem 1rem;
+    background-color: #8f6ba0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background-color: #7a5890;
+}
+
+.warning {
+    color: #b0413e;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+ul li {
+    padding: 0.3rem 0;
+    color: #444;
+}
+
+.role {
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.enter-room-link {
+    display: inline-block;
+    margin-top: 1rem;
+    text-decoration: none;
+    color: #5e3d7b;
+    font-weight: bold;
+    transition: color 0.2s ease;
+}
+
+.enter-room-link:hover {
+    color: #3c2459;
+}
+
+/* Responsive stacking */
+@media (max-width: 768px) {
+    .assign-layout {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .form-card,
+    .participants-card {
+        width: 90%;
+    }
+}

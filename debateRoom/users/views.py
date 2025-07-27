@@ -8,7 +8,8 @@ from .models import CustomUser
 from .forms import CustomUserCreationForm,CustomAuthenticationForm
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.cache import never_cache,cache_control
-
+from django.contrib import messages
+from .models import LoginApprovalRequest
 
 # Create your views here.
 def landing_page(request):
@@ -31,8 +32,12 @@ def register_view(request):
 @staff_member_required
 def pending_users_view(request):
     pending_users = CustomUser.objects.filter(is_approved=False)
-    return render(request, 'users/pending_users.html', {'pending_users': pending_users})
-
+    login_requests = LoginApprovalRequest.objects.select_related('user')
+    return render(request, 'users/pending_users.html', {
+        'pending_users': pending_users,
+        'login_requests': login_requests
+    })
+    
 def registration_pending_view(request):
     user_id = request.session.get('pending_user_id')
     context = {}
@@ -57,11 +62,18 @@ class CustomLoginView(LoginView):
     template_name = 'users/login.html'
     authentication_form = CustomAuthenticationForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("dashboard")  # Redirect if already logged in
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         user = form.get_user()
         if not user.is_approved:
-            messages.error(self.request, "Your account is not approved.")
-            return redirect('login')
+            LoginApprovalRequest.objects.get_or_create(user=user)
+
+            messages.error(self.request, "Your account is not approved. Admin has been notified.")
+            return redirect('registration_pending')
         login(self.request, user)
         return redirect("dashboard")
 
