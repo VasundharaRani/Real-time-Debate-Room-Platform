@@ -7,9 +7,10 @@ body {
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    background-image: url("lavender.jpg"); 
+    background-image: url("ocean.jpg"); 
     background-size: cover;
     background-repeat: no-repeat;
+    background-image: none;
     scrollbar-width: none; 
 }
 /* form {

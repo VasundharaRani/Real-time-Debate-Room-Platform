@@ -33,7 +33,6 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'channels',
     'users',
-    'chats',
     'debates',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -84,7 +83,7 @@ DATABASES = {
         'NAME': 'debate_db',
         'USER': 'vasundhara',
         'PASSWORD': 'vasu1724',
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }

@@ -6,27 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Debates</title>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="{% static 'debates/css/room_detail.css' %}">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css">
     {% block extra_css %}{% endblock %}
     <style>
         body {
-            margin: 0;
+            background: linear-gradient(135deg, #dbe6f6, #0C2D48);
             font-family: 'Segoe UI', sans-serif;
-            background-color: #f8f9fa;
+            padding-top: 6rem;
+            background-attachment: fixed;
+            background-size: cover;
         }
-
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1rem 2rem;
-            background-color: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.1); /* translucent background */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); /* Safari support */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 999;
         }
+
   
         .navbar-logo {
             font-size: 1.5rem;
@@ -49,17 +57,17 @@
         }
   
         .navbar-links a:hover {
-            background-color: #f0f0f0;
+            background-color: #647C90;
         }
   
         .navbar .button-primary {
-            background-color: #FF7A59;
+            background-color: #055C9D;
             color: white;
             font-weight: bold;
         }
   
         .navbar .button-primary:hover {
-            background-color: #ff633f;
+            background-color: #003060;
         }
   
         @media screen and (max-width: 768px) {

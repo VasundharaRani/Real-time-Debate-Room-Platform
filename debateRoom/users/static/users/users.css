@@ -1,141 +1,128 @@
 body {
-   background-color:rgba(212, 187, 221,0.7);
-   background-image: url("lavender.jpg");
-   margin: 0;
-   padding: 0;
-   min-height: 100vh;
-   display: flex;
-   justify-content: center;
-   align-items: center;
-   font-family: 'Segoe UI', sans-serif;
-   overflow: hidden;
- }
- 
- /* Main wrapper - single seamless card */
- .card-wrapper {
-   display: flex;
-   width: 900px;
-   max-width: 95%;
-   border-radius: 16px;
-   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-   overflow: hidden;
-   background-color: #fff;
-   margin: auto;
-   align-items: stretch;
-   min-height: 450px;
- }
- 
- /* Equal width halves */
- .form-section,
- .image-section {
-   flex: 1;
- }
- 
- /* FORM SIDE - now flush and smooth */
- .form-section {
-   padding: 0rem 2rem;
-   display: flex;
-   flex-direction: column;
-   justify-content: center;
-   background-color: white;
- }
- 
- /* IMAGE SIDE */
- /* IMAGE SIDE */
-.image-section {
+  background: linear-gradient(135deg, #dbe6f6, #274472);
+  font-family: 'Segoe UI', sans-serif;
+  padding-top: 5rem;
+  background-attachment: fixed;
+  background-size: cover;
+  min-height: 100vh;
+  margin: 0;
+  padding: 2rem;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f9f9f9;
-  padding: 1rem;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.image-section img {
+/* Glassmorphic Card Container */
+.card-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  max-width: 95%;
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin: auto;
+  align-items: stretch;
+  min-height: 450px;
+  overflow: hidden;
+}
+
+/* Form and Image Sections */
+.form-section{
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.1); /* Light frosted look */
+}
+
+/* Form Section */
+.form-section {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Title */
+.form-title {
+  font-size: 2rem;
+  color: rgba(0, 0, 0, 0.5);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+/* Input Fields */
+input {
   width: 100%;
-  height: auto;
-  object-fit: contain;
-  display: block;
-  margin: 0;
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 0.65rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
- 
- /* Title */
- .form-title {
-   font-size: 2rem;
-   color: #333;
-   margin-bottom: 2rem;
-   text-align: center;
- }
- 
- /* Form groups */
- .form-group {
-   margin-bottom: 1.2rem;
- }
 
- .submit-btn {
+/* Submit Button */
+.submit-btn {
   padding: 0.75rem 2rem;
-  background-color: #8f6ba0;
+  background-color:rgba(39, 68, 114,0.87);
   color: #fff;
   font-size: 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  margin: 1.5rem auto 0 auto; 
-  display: block; 
-  width: 60%; 
+  margin: 1.5rem auto 0 auto;
+  display: block;
+  width: 60%;
   text-align: center;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .submit-btn:hover {
-  background-color: #7a5890;
+  background-color: #0C2D48;
+  transform: scale(1.03);
 }
- 
- input {
-   width: 100%;
-   padding: 0.65rem;
-   border: 1px solid #ccc;
-   border-radius: 6px;
-   font-size: 1rem;
- }
- 
 
- /* Login text */
- .redirect-text {
-   margin-top: 1.5rem;
-   font-size: 0.9rem;
-   text-align: center;
-   color: #666;
- }
- 
- .redirect-text a {
-   color: #FF7A59;
-   text-decoration: underline;
- }
- 
- /* Error Styling */
- .errorlist {
-   list-style: none;
-   padding-left: 0;
-   color: #b50000;
-   font-size: 0.85rem;
-   margin-top: 0.3rem;
- }
- 
- /* Mobile Responsive */
- @media screen and (max-width: 768px) {
-   .card-wrapper {
-     flex-direction: column-reverse;
-     width: 95%;
-     height: auto;
-   }
- 
-   .image-section {
-     height: 200px;
-   }
- 
-   .form-section {
-     padding: 2rem;
-   }
- } 
+/* Redirect Text */
+.redirect-text {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+  color: #eaeaea;
+}
+
+.redirect-text a {
+  color: #0C2D48;
+  text-decoration: underline;
+}
+
+/* Error Styling */
+.errorlist {
+  list-style: none;
+  padding-left: 0;
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+}
+
+
+/* Mobile Responsive */
+@media screen and (max-width: 768px) {
+  .card-wrapper {
+    flex-direction: column-reverse;
+    width: 95%;
+    height: auto;
+  }
+
+  .form-section {
+    padding: 2rem;
+  }
+}

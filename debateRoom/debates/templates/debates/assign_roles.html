@@ -48,7 +48,7 @@
         <li>{{ participant.user.username }} - <span class="role">{{ participant.role }}</span></li>
       {% endfor %}
     </ul>
-    <a class="btn enter-room-btn" href="{% url 'debate_room_detail' room.id %}">Enter Room</a>
+    <a class="enter-room-link" href="{% url 'debate_room_detail' room.id %}">Enter Room</a>
   </div>
 
 </div>

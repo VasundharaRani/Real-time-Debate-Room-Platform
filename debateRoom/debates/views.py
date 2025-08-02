@@ -86,12 +86,17 @@ def assign_roles(request, room_id):
         role = request.POST.get('role')
         user = get_object_or_404(User, id=user_id)
 
-        if room.debate_format == "1v1":
+        if role == "debater":
             debater_count = RoomParticipant.objects.filter(room=room, role='debater').count()
 
-            if debater_count >= 2 and role == "debater":
+            if room.debate_format == "1v1" and debater_count >= 2:
                 messages.error(request, "Cannot assign more than 2 debaters for a 1v1 format.")
                 return redirect('assign_roles', room_id=room.id)
+
+            if room.debate_format == "panel" and debater_count >= 5:
+                messages.error(request, "Cannot assign more than 5 debaters for a panel format.")
+                return redirect('assign_roles', room_id=room.id)
+
 
         # Safe to assign
         participant, created = RoomParticipant.objects.get_or_create(user=user, room=room)

@@ -55,7 +55,7 @@
       {% elif room.is_debate_over %}
       <p class="ended-status">The debate has ended.</p>
       {% else %}
-      <p class="not-started">⏳ The debate has not started yet.</p>
+      <p class="not-started">The debate has not started yet.</p>
       {% endif %}
     </div>
 
@@ -93,7 +93,6 @@
     <div class="card">
       <h4 class="section-title">Moderator Controls</h4>
 
-      <label for="debater-select">Select Debater:</label>
       <select id="debater-select" onchange="updateControlButtons()">
         <option value="" disabled selected>Select a debater</option>
         {% for participant in participants %}
@@ -284,7 +283,6 @@
   </script>
   {% endif %}
 
-  // Agora and role setup
 <script>
   const myRole = "{{ my_role|escapejs }}";
   const roomId = "{{ room.id|escapejs }}";
@@ -292,6 +290,6 @@
   const dashboardUrl = "{% url 'dashboard' %}";
 </script>
 
-<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-<script src="{% static 'debates/js/agora.js' %}"></script>
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js" defer></script>
+<script src="{% static 'debates/js/agora.js' %}" defer></script>
 {% endblock %}

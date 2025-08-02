@@ -1,137 +1,8 @@
-/* body {
-  padding-top: 5rem;
-}
-
-.debate-container {
-  background-color: rgba(255, 255, 255, 0.92);
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-}
-
-.room-title {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #333;
-  text-align: center;
-  margin-bottom: 0.5rem;
-}
-
-.room-description {
-  font-size: 1rem;
-  text-align: center;
-  color: #666;
-  margin-bottom: 2rem;
-}
-
-.section-title {
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  font-size: 1.3rem;
-  color: #444;
-  border-bottom: 2px solid #e6e6e6;
-  padding-bottom: 0.3rem;
-}
-
-.participants-list {
-  list-style: none;
-  padding: 0;
-  margin-left: 1rem;
-}
-
-.vote-form,
-.moderator-controls,
-.debater-controls,
-.chat-section,
-.vote-stats,
-.debate-status {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background-color: #fdfdff;
-  border-radius: 15px;
-  border: 1px solid #ddd;
-}
-
-button,
-.vote-btn,
-.start-btn,
-#send-btn {
-  background-color: #8f6ba0;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin: 0.3rem;
-  transition: background 0.3s ease;
-}
-
-button:hover,
-.vote-btn:hover,
-#send-btn:hover {
-  background-color: #7a5890;
-}
-
-.live-status {
-  color: green;
-  font-weight: bold;
-}
-
-.ended-status {
-  color: #444;
-  font-style: italic;
-}
-
-.not-started {
-  color: #999;
-}
-
-#debater-mute-toggle,
-#mute-icon-btn,
-#kick-icon-btn {
-  background: #fff;
-  color: #8f6ba0;
-  border: 2px solid #8f6ba0;
-  padding: 0.4rem 0.8rem;
-  margin: 0.3rem;
-  border-radius: 8px;
-}
-
-#debater-mute-toggle:hover,
-#mute-icon-btn:hover,
-#kick-icon-btn:hover {
-  background: #7a5890;
-  color: white;
-}
-
-#chat-input {
-  width: calc(100% - 100px);
-  padding: 0.6rem;
-  margin-top: 0.5rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-#send-btn {
-  margin-left: 0.5rem;
-  vertical-align: middle;
-}
-
-#debate-timer {
-  font-weight: bold;
-  margin-top: 1rem;
-  font-size: 1.1rem;
-  text-align: center;
-} */
-
 /* Base Reset */
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background-color: #f5f0fa;
+  background: linear-gradient(to right top, #c2e9fb, #a1c4fd); /* Soft blue background */
   color: #2d2d2d;
   overflow-y: auto;
 }
@@ -144,58 +15,68 @@ body {
   padding: 2rem;
 }
 
-/* Common Card Styles */
+/* Glassmorphism Card */
 .card {
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 1.5rem;
   margin-bottom: 2rem;
   margin-top: 3rem;
+  color: #fff;
 }
 
+/* Section Titles */
 .section-title {
   margin-bottom: 1rem;
   font-size: 1.2rem;
   font-weight: bold;
-  color: #5c3d99;
+  color: #0C2D48;
 }
 
-/* Title and Description */
+/* Room Info */
 .room-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #6a1b9a;
+  color: #0C2D48;
   margin-bottom: 0.5rem;
+  text-align: center;
 }
 
 .room-description {
   font-size: 1rem;
   margin-bottom: 2rem;
+  text-align: center;
+  color: #145DA0;
 }
 
-/* Participant List */
+/* Participants */
 .participants-list {
   list-style: none;
   padding-left: 0;
+  color: #145DA0;
 }
 
 .participants-list li {
   padding: 0.3rem 0;
-  border-bottom: 1px dashed #ddd;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
 }
 
 /* Buttons */
 button,
 .vote-btn,
 .start-btn,
-.enter-room-btn {
-  background-color: #a682d9;
+.enter-room-btn,
+#send-btn {
+  background: #055C9D;
   color: white;
   border: none;
   padding: 0.6rem 1rem;
   font-size: 1rem;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -203,79 +84,98 @@ button,
 button:hover,
 .vote-btn:hover,
 .start-btn:hover,
-.enter-room-btn:hover {
-  background-color: #8a5fd6;
+.enter-room-btn:hover,
+#send-btn:hover {
+  background: #003060;
 }
 
+/* Control Buttons */
 .control-buttons button {
   margin-right: 0.5rem;
   font-size: 1.1rem;
   padding: 0.4rem 0.7rem;
 }
 
+/* Mute Toggle */
 #debater-mute-toggle {
   font-size: 1.3rem;
-  background: transparent;
-  color: #6a1b9a;
-  border: 2px solid #6a1b9a;
+  background: rgba(255, 255, 255, 0.15);
+  color: #e0e0ff;
+  border: 2px solid #e0e0ff;
   padding: 0.5rem 0.8rem;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
-/* Timer, Live, Ended Status */
+/* Status */
 .live-status {
-  color: rgb(3, 100, 3);
+  color: #145DA0;
   font-weight: bold;
 }
 
 .ended-status {
-  color: #555;
+  color: #145DA0;
 }
 
 .not-started {
-  color: #888;
+  color: #145DA0;
 }
 
-/* Chat Styles */
+/* Chat Section */
 .chat-section {
   display: flex;
   flex-direction: column;
   height: 500px;
+  color: #145DA0;
 }
 
 .chat-box {
   flex-grow: 1;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1rem;
-  background-color: #fafafa;
+  background-color: rgba(255, 255, 255, 0.1);
   overflow-y: auto;
   max-height: 350px;
-  scrollbar-width: none;           
-  -ms-overflow-style: none;  
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .chat-box::-webkit-scrollbar {
   display: none;
 }
 
+/* Chat Controls */
 .chat-controls {
   display: flex;
   gap: 0.5rem;
 }
 
+/* Fix input fields */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select,
 #chat-input {
-  flex: 1;
-  padding: 0.6rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-#send-btn {
+  width: 100%;
   padding: 0.6rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  color: #274472;
+  font-size: 1rem;
+  outline: none;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(5px);
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: #274472;
+}
 
 /* Responsive Design */
 @media (max-width: 900px) {
@@ -283,4 +183,3 @@ button:hover,
     grid-template-columns: 1fr;
   }
 }
-

@@ -1,10 +1,11 @@
 body {
-    margin: 0;
-    padding: 0;
+    background: linear-gradient(175deg, #dbe6f6, #274472);
     font-family: 'Segoe UI', sans-serif;
-    background-image: url('lavender.jpg');
+    padding-top: 5rem;
+    background-attachment: fixed;
+    background-size: cover;
     min-height: 100vh;
-  }
+}
   
   .landing-container {
     display: flex;
@@ -15,12 +16,15 @@ body {
   
   .hero-section {
     display: flex;
-    background-color: #ffffff;
+    background-color: rgba(255, 255, 255,0.2);
     border-radius: 16px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     max-width: 1100px;
     width: 100%;
+    backdrop-filter: blur(16px); /* blur glass effect */
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.3); /* light border for shine */
   }
   
   .hero-text {
@@ -79,6 +83,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    opacity: 0.73;
   }
   
   .hero-image img {

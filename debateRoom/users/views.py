@@ -13,9 +13,13 @@ from .models import LoginApprovalRequest
 
 # Create your views here.
 def landing_page(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     return render(request,"users/landing.html")
     
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():

@@ -24,8 +24,7 @@ from users.admin import custom_admin_site
 urlpatterns = [
     path('admin/', custom_admin_site.urls),
     path('',include("users.urls")),
-    path('debates/',include("debates.urls")),
-    path('chats/',include("chats.urls"))
+    path('debates/',include("debates.urls"))
 ]
 
 if settings.DEBUG:

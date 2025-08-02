@@ -1,4 +1,4 @@
-const appid = "b6b8a55634544a4890ab32d46623c2a2";
+const appid = "0a14d71d6058422ba7a61fb92ce5da16";
 const token = null;
 const CHANNEL = roomId;
 
@@ -22,7 +22,7 @@ async function joinAgoraVoiceRoom() {
   if (myRole === "debater") {
     localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
     await client.publish([localAudioTrack]);
-    console.log("🎙️ Microphone published");
+    console.log("Microphone published");
   }
 
   client.on("user-published", async (user, mediaType) => {
@@ -46,7 +46,7 @@ async function leaveAgoraRoom() {
       await localAudioTrack.close();
     }
     await client.leave();
-    console.log("🚪 Left Agora channel");
+    console.log("Left Agora channel");
   } catch (err) {
     console.error("Error leaving Agora:", err);
   }
@@ -58,7 +58,7 @@ function setupWebSocketControl() {
   socket = new WebSocket(`${protocol}://${window.location.host}/ws/room/${roomId}/control/`);
 
   socket.onopen = () => {
-    console.log("🟢 WebSocket connected to control channel");
+    console.log("WebSocket connected to control channel");
   };
 
   socket.onmessage = function (event) {
@@ -74,7 +74,7 @@ function setupWebSocketControl() {
         isMutedByModerator = true;
         isLocallyMuted = false;
         if (option) option.setAttribute("data-muted", "true");
-        console.log("🔇 You were muted by the moderator.");
+        console.log("You were muted by the moderator.");
       } else if (data.action === "unmute" && localAudioTrack) {
         localAudioTrack.setEnabled(true);
         icon.className = "fas fa-microphone";
@@ -97,11 +97,11 @@ function setupWebSocketControl() {
   };
 
   socket.onerror = (error) => {
-    console.error("❌ WebSocket error:", error);
+    console.error("WebSocket error:", error);
   };
 
   socket.onclose = () => {
-    console.warn("⚠️ WebSocket closed. Retrying in 3s...");
+    console.warn("WebSocket closed. Retrying in 3s...");
     setTimeout(setupWebSocketControl, 3000);
   };
 }
@@ -114,7 +114,7 @@ function sendControl(action, userId) {
     return;
   }
 
-  console.log(`📤 Sending control: ${action} to user: ${userId}`);
+  console.log(`Sending control: ${action} to user: ${userId}`);
   socket.send(JSON.stringify({
     action: action,
     target_user_id: userId
@@ -132,7 +132,7 @@ async function toggleDebaterMute() {
     isMutedByModerator = false;
     isLocallyMuted = false;
     icon.className = "fas fa-microphone";
-    console.log("🔊 Unmuted after moderator mute");
+    console.log(" Unmuted after moderator mute");
     if (socket?.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: "self-unmute", user_id: currentUserId }));
     }
@@ -142,7 +142,7 @@ async function toggleDebaterMute() {
   isLocallyMuted = !isLocallyMuted;
   await localAudioTrack.setEnabled(!isLocallyMuted);
   icon.className = isLocallyMuted ? "fas fa-microphone-slash" : "fas fa-microphone";
-  console.log("🔄 Toggled self-mute");
+  console.log("Toggled self-mute");
 }
 
 // Update moderator's mute button UI based on selection
