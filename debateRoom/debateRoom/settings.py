@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-rq5z3%iaz%$x4byos941gk5k6vcj!gvb(=vogr4ah&k7=7xhs-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['debateRoom.onrender.com']
+ALLOWED_HOSTS = [ 'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    'debateRoom.onrender.com']
 
 
 # Application definition
