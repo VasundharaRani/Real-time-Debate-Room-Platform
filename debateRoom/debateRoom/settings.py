@@ -130,7 +130,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [BASE_DIR / "static"]  # Global static files
 STATIC_ROOT = BASE_DIR / "staticfiles"    # For collectstatic in production
 
 MEDIA_URL = '/media/'
