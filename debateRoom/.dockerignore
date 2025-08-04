@@ -3,5 +3,4 @@ __pycache__/
 *.pyo
 *.db
 .env
-static/
 media/
