@@ -1,48 +1,20 @@
- h1 {
-    color: #A45C40;
-}
 body {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    background-image: url("ocean.jpg"); 
-    background-size: cover;
-    background-repeat: no-repeat;
     background-image: none;
     scrollbar-width: none; 
 }
-/* form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem; 
-    padding: 2rem;
-    background-color: rgb(255,255,255,0.2);
-    backdrop-filter: blur(15px);
-    border-radius: 8px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 400px;
-    color: bisque;
-} */
 
-/* div {
-    color: #F0C9B3;
-    margin: 1rem;
-} */
 input {
     height: 2rem;
     border-radius: 0.75rem;
     border: 0.1rem solid wheat;
     padding: 0.2rem;
 }
-/* p {
-    color: bisque;
-}
-a {
-    color: #B97D60;
-} */
+
 .navbar a{
     text-decoration: none;
 } 
