@@ -15,6 +15,9 @@ RUN pip install --no-cache-dir -r /requirements.txt
 # Copy project files
 COPY . .
 
+#Debugging
+RUN ls -R /app/users/static
+RUN ls -R /app/static
 # Collect static files (optional if needed)
 RUN python manage.py collectstatic --noinput
 
