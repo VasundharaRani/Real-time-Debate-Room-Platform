@@ -86,11 +86,11 @@ WSGI_APPLICATION = 'debateRoom.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'debate_db',
-        'USER': 'vasundhara',
-        'PASSWORD': 'vasu1724',
-        'HOST': 'db',
-        'PORT': '5432',
+        'NAME':  os.environ.get("POSTGRES_DB", "debate_db"),
+        'USER':  os.environ.get("POSTGRES_USER", "vasundhara"),
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD", "vasu1724"),
+        'HOST': os.environ.get("POSTGRES_HOST", "db"),
+        'PORT':  os.environ.get("POSTGRES_PORT", "5432"),
     }
 }
 
