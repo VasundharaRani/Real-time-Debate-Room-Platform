@@ -29,7 +29,7 @@ DEBUG = False
 ALLOWED_HOSTS = [ 'localhost',
     '127.0.0.1',
     '0.0.0.0',
-    'DebateRoom.onrender.com']
+    'debateroom-37qi.onrender.com',]
 
 
 # Application definition
